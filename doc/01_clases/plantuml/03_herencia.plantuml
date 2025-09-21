@@ -1,0 +1,40 @@
+@startuml
+class Persona {
+  - id: int
+  - dni: String
+  - nombre: String
+  - edad: int
+
+  ' Constructor
+  + Persona(id: int, dni: String, nombre: String, edad: int)
+
+  ' Métodos de acceso a atributos
+  + getId(): int
+  + setId(id: int): void
+  + getDni(): String
+  + setDni(dni: String): void
+  + getNombre(): String
+  + setNombre(nombre: String): void
+  + getEdad(): int
+  + setEdad(edad: int): void
+  + setDescripcion(descrip: String): void
+  + getDescripcion(): String
+
+}
+
+class Cliente {
+  - categoria: String
+
+  ' Constructor
+  + Cliente(id: int, dni: String, nombre: String, edad: int, categoria: String)
+
+  ' Métodos de acceso
+  + getCategoria(): String
+  + setCategoria(categoria: String): void
+
+  ' Sobrescribe el método getDescripcion()
+  + getDescripcion(): String
+}
+
+Persona <|-- Cliente
+@enduml

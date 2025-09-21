@@ -1,0 +1,26 @@
+@startuml
+' Definición de interfaz
+interface Notificable {
+  + enviarNotificacion(mensaje: String): void
+}
+
+' Clase concreta que implementa la interfaz
+class Cliente {
+  - id: int
+  - nombre: String
+  - email: String
+  + enviarNotificacion(mensaje: String): void
+}
+
+' Clase concreta que también implementa la interfaz
+class Empleado {
+  - id: int
+  - nombre: String
+  - telefono: String
+  + enviarNotificacion(mensaje: String): void
+}
+
+' Relación de implementación (línea discontinua con flecha triangular)
+Cliente ..|> Notificable
+Empleado ..|> Notificable
+@enduml

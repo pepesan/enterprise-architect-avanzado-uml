@@ -1,0 +1,24 @@
+@startuml
+' Interfaz base
+interface Notificable {
+  + enviarNotificacion(mensaje: String): void
+}
+
+' Interfaz hija que amplía el contrato
+interface NotificableAvanzado {
+  + programarNotificacion(mensaje: String, fecha: Date): void
+}
+
+' Herencia de interfaces
+Notificable <|-- NotificableAvanzado
+
+' Clase que implementa la interfaz más avanzada
+class ClientePremium {
+  - id: int
+  - email: String
+  + enviarNotificacion(mensaje: String): void
+  + programarNotificacion(mensaje: String, fecha: Date): void
+}
+
+ClientePremium ..|> NotificableAvanzado
+@enduml

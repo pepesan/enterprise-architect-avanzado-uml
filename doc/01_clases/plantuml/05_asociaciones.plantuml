@@ -1,0 +1,35 @@
+@startuml
+' Dominio tienda online: Cliente, Pedido, DetallePedido, Producto
+
+class Cliente {
+  - id: int
+  - nombre: String
+}
+
+class Pedido {
+  - id: int
+  - fecha: Date
+  - estado: String
+}
+
+class DetallePedido {
+  - cantidad: int
+  - precioUnitario: decimal
+}
+
+class Producto {
+  - sku: String
+  - nombre: String
+  - precio: decimal
+}
+
+' Asociación Cliente–Pedido (1 a muchos)
+Cliente "1" -- "0..*" Pedido : realiza / perteneceA
+
+' Composición Pedido–DetallePedido (el detalle no existe sin su pedido)
+Pedido "1" *-- "1..*" DetallePedido : contiene
+
+' Asociación DetallePedido–Producto (cada detalle referencia un producto)
+DetallePedido "*" --> "1" Producto : item
+
+@enduml

@@ -1,0 +1,36 @@
+@startuml
+' Clases principales
+class Pedido {
+  - id: int
+  - fecha: Date
+  - estado: String
+}
+
+class Producto {
+  - sku: String
+  - nombre: String
+  - precioBase: decimal
+}
+
+' Clase de asociación: representa atributos del vínculo Pedido–Producto
+class DetallePedido {
+  - cantidad: int
+  - precioUnitario: decimal
+  - descuento: decimal
+  + subtotal(): decimal
+}
+
+' Asociación principal Pedido–Producto (cada pedido contiene varios productos)
+Pedido "1" -- "1..*" Producto : items
+
+' Enlace de clase de asociación (sintaxis PlantUML)
+(Pedido, Producto) .. DetallePedido
+
+note bottom of DetallePedido
+Clase de asociación:
+- La relación Pedido–Producto tiene atributos propios
+  (cantidad, precioUnitario, descuento).
+- subtotal() suele calcularse como:
+  cantidad * (precioUnitario - descuento)
+end note
+@enduml

@@ -1,0 +1,74 @@
+@startuml
+' === Clases del dominio ===
+class Cliente {
+  - id: int
+  - nombre: String
+  - email: String
+}
+
+class Pedido {
+  - id: int
+  - fecha: Date
+  - estado: String
+}
+
+class DetallePedido {
+  - cantidad: int
+  - precioUnitario: decimal
+  + subtotal(): decimal
+}
+
+class Producto {
+  - sku: String
+  - nombre: String
+  - precio: decimal
+  + getPrecio(): decimal
+}
+
+class Categoria {
+  - id: int
+  - nombre: String
+}
+
+class Pago {
+  - id: int
+  - importe: decimal
+  - metodo: String
+  - confirmado: boolean
+}
+
+' === Relaciones con roles, multiplicidades y notas ===
+
+' Cliente (rol cliente) 1 ---- 0..* (rol pedidos) Pedido
+Cliente "1" <-- "0..*" Pedido : cliente / pedidos
+
+' Composición: Pedido contiene DetallePedido (la vida del detalle depende del pedido)
+Pedido "1" *-- "1..*" DetallePedido : pedido / detalles {ordered}
+
+' Cada detalle referencia a un Producto (navegabilidad hacia Producto)
+DetallePedido "*" --> "1" Producto : producto
+
+' Agregación: una Categoría agrupa muchos Productos (relación todo–parte débil)
+Categoria "1" o-- "0..*" Producto : categoria / productos
+
+' Un Pedido puede tener 0..1 Pago (asociación simple, unidireccional)
+Pedido "0..1" --> "1" Pago : pago
+
+' === Notas explicativas ===
+note top of Pedido
+{ordered} en la relación con DetallePedido
+indica que los detalles conservan un orden
+(p.ej., posición en el carrito).
+end note
+
+note right of Categoria
+Agregación (rombo blanco):
+la categoría puede existir aunque los
+productos se eliminen o cambien.
+end note
+
+note bottom of Pedido
+Composición (rombo negro) con DetallePedido:
+si se elimina Pedido, sus Detalles desaparecen.
+end note
+@enduml

@@ -1,0 +1,50 @@
+@startuml
+' Clase base concreta
+class Persona {
+  - id: int
+  - dni: String
+  - nombre: String
+  - edad: int
+
+  + Persona(id: int, dni: String, nombre: String, edad: int)
+  + getId(): int
+  + setId(id: int): void
+  + getDni(): String
+  + setDni(dni: String): void
+  + getNombre(): String
+  + setNombre(nombre: String): void
+  + getEdad(): int
+  + setEdad(edad: int): void
+
+  + getDescripcion(): String
+}
+
+' Subclase 1
+class Cliente {
+  - categoria: String
+  + Cliente(id: int, dni: String, nombre: String, edad: int, categoria: String)
+  + getCategoria(): String
+  + setCategoria(categoria: String): void
+  + getDescripcion(): String
+}
+
+' Subclase 2
+class Empleado {
+  - puesto: String
+  + Empleado(id: int, dni: String, nombre: String, edad: int, puesto: String)
+  + getPuesto(): String
+  + setPuesto(puesto: String): void
+  + getDescripcion(): String
+}
+
+Persona <|-- Cliente
+Persona <|-- Empleado
+
+note right of Persona
+El polimorfismo permite invocar
+getDescripcion() sobre referencias
+de tipo Persona y que, en tiempo
+de ejecución, se ejecute la
+implementación de Cliente o Empleado.
+end note
+@enduml
