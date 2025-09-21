@@ -1,0 +1,9 @@
+@startuml
+' Diagrama de clases básico: una sola clase con atributos y métodos
+class Cliente {
+  - id: int
+  - nombre: String
+  + getNombre(): String
+  + setNombre(nombre: String): void
+}
+@enduml

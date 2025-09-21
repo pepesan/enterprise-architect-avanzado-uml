@@ -1,0 +1,14 @@
+@startuml
+' Clase base abstracta con atributo estático y método abstracto
+abstract class Persona {
+  - id: int
+  # nombre: String
+  ~ edad: int
+  {static} contador: int
+
+  + getId(): int
+  + setId(id: int): void
+  {abstract} getDescripcion(): String
+}
+@enduml
+
