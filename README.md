@@ -5,6 +5,7 @@ Este repositorio contiene ejemplos de diagramas UML y modelos utilizados en el c
 - `README.md`: Este archivo de documentación.
 - docs/: Documentación adicional y recursos relacionados con UML.
   - `clases/`: Contiene ejemplos de diagramas de clases UML.
+  - `componentes/`: Contiene ejemplos de diagramas de componentes UML.
   
 ## Estructura de carpetas de ejemplos diagramas UML
 - `svg`: Contiene imágenes SVG de los diagramas UML.

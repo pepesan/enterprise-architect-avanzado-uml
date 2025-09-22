@@ -1,0 +1,15 @@
+@startuml
+' Componentes internos del sistema
+component "Gestión de Pedidos" as Pedidos
+
+
+' Componente externo (ej. pasarela de pagos)
+component "Proveedor de Pagos (externo)" as Pago <<external>>
+
+' Interfaz proporcionada por el proveedor
+interface PagoService
+Pago - PagoService
+
+' Gestión de Pedidos requiere la interfaz de pago
+Pedidos - PagoService : <<requiere>>
+@enduml

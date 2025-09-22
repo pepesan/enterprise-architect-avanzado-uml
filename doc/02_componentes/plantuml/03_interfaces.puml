@@ -1,0 +1,10 @@
+@startuml
+component "Autenticación" as Auth
+component "Catálogo de Productos" as Catalogo
+
+interface CatalogService
+
+Catalogo - CatalogService : <<proporciona>>
+Auth - CatalogService : <<requiere>>
+@enduml
+

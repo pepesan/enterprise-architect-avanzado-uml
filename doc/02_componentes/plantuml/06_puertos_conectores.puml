@@ -1,0 +1,27 @@
+@startuml
+' Parámetros de legibilidad
+left to right direction
+skinparam linetype ortho
+skinparam nodesep 120
+skinparam ranksep 150
+skinparam defaultFontSize 18
+skinparam componentFontSize 20
+skinparam interfaceFontSize 18
+hide stereotype
+
+' —— Componentes ——
+component "Pedidos" as Pedidos
+component "Pagos" as Pagos
+
+' —— Interfaces (un solo elemento para PaymentAPI) ——
+interface "OrderService" as IOrder
+interface "PaymentAPI" as IPay
+
+' —— Relación de Pedidos ——
+Pedidos -down- IOrder : <<proporciona>>
+Pedidos -down- IPay   : <<requiere>>
+
+' —— Relación de Pagos ——
+Pagos -down- IPay     : <<proporciona>>
+@enduml
+

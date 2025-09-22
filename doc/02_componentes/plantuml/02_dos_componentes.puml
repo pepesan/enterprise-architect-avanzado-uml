@@ -1,0 +1,8 @@
+@startuml
+' Definición de componentes
+component "Autenticación" as Auth
+component "Catálogo de Productos" as Catalogo
+
+' Relación de dependencia
+Auth --> Catalogo : usa
+@enduml

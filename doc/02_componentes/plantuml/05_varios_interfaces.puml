@@ -1,0 +1,45 @@
+@startuml
+' —— Ajustes globales de legibilidad ——
+left to right direction
+skinparam linetype ortho
+skinparam componentStyle rectangle
+skinparam nodesep 150
+skinparam ranksep 200
+skinparam defaultFontSize 18
+skinparam componentFontSize 20
+skinparam interfaceFontSize 18
+hide stereotype
+
+' —— Proveedor ——
+package "Proveedor (Catálogo)" as PK_PROV {
+  component "Catálogo" as Catalogo
+
+  ' Interfaces proporcionadas
+  interface "CatalogQuery" as ICatalogQuery_prov
+  interface "CatalogAdmin" as ICatalogAdmin_prov
+
+  Catalogo -down- ICatalogQuery_prov : <<proporciona>>
+  Catalogo -down- ICatalogAdmin_prov : <<proporciona>>
+}
+
+' —— Consumidores ——
+package "Consumidores" as PK_CONS {
+  component "Buscador" as Search
+  component "Analítica" as Analytics
+  component "Gestión de Inventario" as Inventory
+
+  ' Interfaces requeridas (duplicadas solo para claridad visual)
+  interface "CatalogQuery" as ICatalogQuery_req_Search
+  interface "CatalogQuery" as ICatalogQuery_req_Analytics
+  interface "CatalogAdmin" as ICatalogAdmin_req_Inventory
+
+  Search    -down- ICatalogQuery_req_Search    : <<requiere>>
+  Analytics -down- ICatalogQuery_req_Analytics : <<requiere>>
+  Inventory -down- ICatalogAdmin_req_Inventory : <<requiere>>
+}
+
+' —— Conexiones limpias entre contratos ——
+ICatalogQuery_req_Search    -right- ICatalogQuery_prov
+ICatalogQuery_req_Analytics -right- ICatalogQuery_prov
+ICatalogAdmin_req_Inventory -right- ICatalogAdmin_prov
+@enduml
