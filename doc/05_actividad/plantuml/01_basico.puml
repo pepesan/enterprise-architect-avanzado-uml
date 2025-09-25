@@ -1,0 +1,14 @@
+@startuml
+start
+
+:Introducir credenciales;
+:Validar credenciales;
+
+if (Credenciales válidas?) then (sí)
+  :Acceso concedido;
+else (no)
+  :Acceso denegado;
+endif
+
+stop
+@enduml

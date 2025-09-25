@@ -1,0 +1,17 @@
+@startuml
+start
+:Cliente realiza pedido;
+:Procesar pago;
+:Generar pedido;
+
+:Enviar señal "Pedido confirmado";
+
+stop
+
+' --- Proceso independiente ---
+start
+:Esperar señal "Pedido confirmado";
+:Preparar envío;
+:Notificar transporte;
+stop
+@enduml

@@ -1,0 +1,18 @@
+@startuml
+start
+
+:Seleccionar productos;
+:Confirmar carrito;
+
+:«subactividad» Calcular costes de envío;
+
+:Procesar pago;
+
+if (Pago aprobado?) then (sí)
+  :Generar pedido;
+else (no)
+  :Notificar error de pago;
+endif
+
+stop
+@enduml

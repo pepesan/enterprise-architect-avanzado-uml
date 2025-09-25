@@ -1,0 +1,25 @@
+@startuml
+|Usuario|
+start
+:Seleccionar productos;
+:Confirmar carrito;
+
+|Sistema|
+:Preparar pedido;
+:Solicitar pago;
+
+|Pasarela de Pago|
+:Procesar pago;
+
+|Sistema|
+if (Pago aprobado?) then (sí)
+  :Generar pedido;
+  :Notificar confirmación;
+else (no)
+  :Notificar error de pago;
+endif
+
+|Usuario|
+:Recibir notificación;
+stop
+@enduml

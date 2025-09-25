@@ -1,0 +1,25 @@
+@startuml
+start
+
+:Seleccionar producto;
+:Añadir al carrito;
+:Proceder al pago;
+:Validar pago;
+
+if (Pago aprobado?) then (sí)
+  :Generar pedido;
+
+  fork
+    :Actualizar inventario;
+  fork again
+    :Enviar notificación al cliente;
+  end fork
+
+else (no)
+  :Notificar error de pago;
+endif
+
+stop
+@enduml
+
+

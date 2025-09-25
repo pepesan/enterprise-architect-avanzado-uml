@@ -1,0 +1,19 @@
+@startuml
+start
+repeat
+  :Introducir credenciales;
+  :Validar credenciales;
+  if (¿Credenciales válidas?) then (sí)
+    :Acceso concedido;
+  else (no)
+    :Mostrar error;
+  endif
+repeat while (¡no válidas y <3 intentos?) is (sí)
+
+if (¿Credenciales válidas?) then (sí)
+  stop
+else (no)
+  :Bloquear acceso;
+  stop
+endif
+@enduml

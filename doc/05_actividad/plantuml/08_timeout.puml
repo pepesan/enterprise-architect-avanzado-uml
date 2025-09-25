@@ -1,0 +1,14 @@
+@startuml
+start
+:Cliente inicia compra;
+:Generar pedido pendiente;
+:Esperar pago;
+
+if (¿Pago recibido antes de 15 min?) then (sí)
+  :Confirmar pedido;
+  stop
+else (no)
+  :Cancelar pedido por timeout;
+  stop
+endif
+@enduml

@@ -1,0 +1,31 @@
+@startuml
+start
+
+:Abrir checkout;
+
+if (¿Tiene cupón?) then (sí)
+  :Introducir cupón;
+  :Validar cupón;
+  if (Cupón válido?) then (sí)
+    :Aplicar descuento;
+  else (no)
+    :Mostrar error de cupón;
+  endif
+endif
+
+if (¿Envoltorio de regalo?) then (sí)
+  :Añadir envoltorio;
+endif
+
+:Seleccionar método de pago;
+:Procesar pago;
+
+if (Pago aprobado?) then (sí)
+  :Generar pedido;
+  stop
+else (no)
+  :Notificar error de pago;
+  stop
+endif
+
+@enduml
