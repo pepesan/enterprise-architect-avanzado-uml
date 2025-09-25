@@ -15,4 +15,5 @@ Este repositorio contiene ejemplos de diagramas UML y modelos utilizados en el c
 - `svg`: Contiene imágenes SVG de los diagramas UML.
 - `plantuml`: Contiene archivos PlantUML para generar los diagramas UML.
  
-## Cómo usar este repositorio
+## Licencia
+Este proyecto está licenciado bajo la Licencia CC-BY-NC-SA 4.0. Consulta el archivo LICENSE para más detalles.
