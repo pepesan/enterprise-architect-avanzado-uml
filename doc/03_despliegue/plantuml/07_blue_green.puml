@@ -1,0 +1,58 @@
+@startuml
+top to bottom direction
+skinparam linetype ortho
+skinparam nodesep 160
+skinparam ranksep 20
+skinparam defaultFontSize 18
+hide stereotype
+
+' —— Nodo 1: Worker con dos versiones de la API ——
+node "Nodo k8s Worker de Contenedores\n(VM/Linux)" as Worker {
+
+  ' Pod Web (sirve tráfico y enruta a la API activa)
+  node "Pod: web" as PodWeb {
+    node "Contenedor: web\n(image: tienda/web:2.2.0)" as C_WEB {
+      artifact "dist/ (SPA)" as A_WEB
+      artifact "ENV:\nPORT=80\nAPI_URL=http://api-active:8080" as A_WEB_ENV
+    }
+  }
+
+  ' Pod API v1 (blue)
+  node "Pod: api-blue" as PodBlue {
+    node "Contenedor: api\n(image: tienda/api:1.5.3)" as C_API_BLUE {
+      artifact "api.jar" as A_API_BLUE
+      artifact "ENV:\nPORT=8080\nPROFILE=blue" as A_API_BLUE_ENV
+    }
+  }
+
+  ' Pod API v2 (green)
+  node "Pod: api-green" as PodGreen {
+    node "Contenedor: api\n(image: tienda/api:1.6.0)" as C_API_GREEN {
+      artifact "api.jar" as A_API_GREEN
+      artifact "ENV:\nPORT=8080\nPROFILE=green" as A_API_GREEN_ENV
+    }
+  }
+
+  ' Servicio lógico (alias DNS interno / Virtual IP)
+  node "Service: api-active" as SVC_ACTIVE {
+    artifact "Selector → versión activa\n(blue | green)" as A_SVC
+  }
+}
+
+' —— Nodo 2: Base de datos gestionada ——
+node "Base de Datos Gestionada\n(PostgreSQL PaaS)" as DBaaS {
+  artifact "Schema: tienda" as A_DB
+}
+
+' —— Conexiones visibles ——
+C_WEB -- SVC_ACTIVE : HTTP 80→8080\n(API_URL=api-active)
+SVC_ACTIVE -- C_API_BLUE  : target (cuando BLUE activo)
+SVC_ACTIVE -- C_API_GREEN : target (cuando GREEN activo)
+C_API_BLUE  -- DBaaS : JDBC/5432 TLS
+C_API_GREEN -- DBaaS : JDBC/5432 TLS
+
+' —— Aristas ocultas para airear ——
+PodWeb -[hidden]- PodBlue
+PodWeb -[hidden]- PodGreen
+SVC_ACTIVE -[hidden]- DBaaS
+@enduml

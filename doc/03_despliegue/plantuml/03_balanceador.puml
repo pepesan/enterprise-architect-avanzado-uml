@@ -1,0 +1,31 @@
+@startuml
+top to bottom direction
+skinparam linetype ortho
+skinparam nodesep 160
+skinparam ranksep 200
+skinparam defaultFontSize 18
+hide stereotype
+
+' Nodos
+node "Cliente (Navegador)" as Cliente
+node "Servidor Web / Balanceador" as WebSrv {
+  artifact "Nginx/Apache" as WebSoft
+}
+node "Servidor de Aplicaciones" as AppSrv {
+  artifact "WebApp.war" as WebApp
+}
+node "Servidor de Base de Datos" as DBSrv {
+  artifact "TiendaDB" as DB
+}
+
+' Conexiones visibles
+Cliente -- WebSrv : HTTP/HTTPS
+WebSrv -- AppSrv : Proxy/Load Balancing
+AppSrv -- DBSrv : JDBC/SQL
+
+' —— Aristas ocultas que empujan el layout ——
+Cliente -[hidden]- WebSrv
+WebSrv  -[hidden]- AppSrv
+AppSrv  -[hidden]- DBSrv
+@enduml
+

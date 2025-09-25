@@ -1,0 +1,14 @@
+@startuml
+left to right direction
+skinparam linetype ortho
+skinparam defaultFontSize 16
+hide stereotype
+
+node "Cliente (Navegador)" as Cliente
+
+node "Servidor de Aplicaciones" as AppSrv {
+  artifact "WebApp.war" as WebApp
+}
+
+Cliente -- AppSrv : HTTP/HTTPS
+@enduml

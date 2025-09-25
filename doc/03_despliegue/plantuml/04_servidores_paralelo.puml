@@ -1,0 +1,43 @@
+@startuml
+top to bottom direction
+skinparam linetype ortho
+skinparam nodesep 160
+skinparam ranksep 200
+skinparam defaultFontSize 18
+hide stereotype
+
+' —— Cliente ——
+node "Cliente (Navegador)" as Cliente
+
+' —— Servidor Web / Balanceador ——
+node "Servidor Web / Balanceador" as WebSrv {
+  artifact "Nginx/Apache" as WebSoft
+}
+
+' —— Servidores de Aplicaciones (escalado horizontal) ——
+node "Servidor de Aplicaciones A" as AppSrvA {
+  artifact "WebApp.war" as WebAppA
+}
+node "Servidor de Aplicaciones B" as AppSrvB {
+  artifact "WebApp.war" as WebAppB
+}
+
+' —— Servidor de Base de Datos ——
+node "Servidor de Base de Datos" as DBSrv {
+  artifact "TiendaDB" as DB
+}
+
+' —— Conexiones visibles ——
+Cliente -- WebSrv : HTTP/HTTPS
+WebSrv -- AppSrvA : Proxy/Load Balancing
+WebSrv -- AppSrvB : Proxy/Load Balancing
+AppSrvA -- DBSrv : JDBC/SQL
+AppSrvB -- DBSrv : JDBC/SQL
+
+' —— Aristas ocultas para mejorar layout vertical ——
+Cliente -[hidden]- WebSrv
+WebSrv -[hidden]- AppSrvA
+WebSrv -[hidden]- AppSrvB
+AppSrvA -[hidden]- DBSrv
+AppSrvB -[hidden]- DBSrv
+@enduml

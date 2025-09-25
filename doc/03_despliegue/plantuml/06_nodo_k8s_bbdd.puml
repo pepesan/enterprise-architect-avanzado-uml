@@ -1,0 +1,47 @@
+@startuml
+top to bottom direction
+skinparam linetype ortho
+skinparam nodesep 160
+skinparam ranksep 220
+skinparam defaultFontSize 18
+hide stereotype
+
+' —— Nodo de cómputo (único worker) ——
+node "Nodo K8s Worker de Contenedores\n(VM/Linux)" as Worker {
+
+  ' Pod/Grupo lógico de contenedores
+  node "Pod: tienda-online" as Pod {
+
+    ' Contenedor 1: API
+    node "Contenedor: api\n(image: tienda/api:1.4.2)" as C_API {
+      artifact "api.jar" as A_API
+      artifact "ENV:\nPORT=8080\nCACHE_HOST=cache.local\nLOG_LEVEL=INFO" as A_API_ENV
+    }
+
+    ' Contenedor 2: Web (SPA)
+    node "Contenedor: web\n(image: tienda/web:2.1.0)" as C_WEB {
+      artifact "dist/\n(build SPA)" as A_WEB
+      artifact "ENV:\nPORT=80\nAPI_URL=http://localhost:8080" as A_WEB_ENV
+    }
+
+    ' Volumen compartido (config/cache local)
+    node "Volumen (emptyDir)" as VOL {
+      artifact "/cache" as A_VOL
+    }
+  }
+}
+
+' —— Nodo externo: Base de datos gestionada ——
+node "Base de Datos Gestionada\n(PostgreSQL PaaS)" as DBaaS {
+  artifact "Schema: tienda" as A_DB
+  artifact "Parámetros:\nmax_connections=200\nstatement_timeout=5s" as A_DB_CFG
+}
+
+' —— Conexiones visibles ——
+C_WEB -- C_API : HTTP 80→8080\n(Loopback Pod)
+C_API -- DBaaS : JDBC/5432\nTLS
+
+' —— Conexiones internas (no dibujadas) para forzar aire ——
+C_API -[hidden]- C_WEB
+Pod   -[hidden]- DBaaS
+@enduml

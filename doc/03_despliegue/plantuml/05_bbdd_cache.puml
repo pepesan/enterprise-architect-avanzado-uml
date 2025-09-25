@@ -1,0 +1,55 @@
+@startuml
+top to bottom direction
+skinparam linetype ortho
+skinparam nodesep 170
+skinparam ranksep 220
+skinparam defaultFontSize 18
+hide stereotype
+
+' —— Cliente ——
+node "Cliente (Navegador)" as Cliente
+
+' —— Servidor Web / Balanceador ——
+node "Servidor Web / Balanceador" as WebSrv {
+  artifact "Nginx/Apache" as WebSoft
+}
+
+' —— Servidores de Aplicaciones (escalado horizontal) ——
+node "Servidor de Aplicaciones A" as AppSrvA {
+  artifact "WebApp.war" as WebAppA
+}
+node "Servidor de Aplicaciones B" as AppSrvB {
+  artifact "WebApp.war" as WebAppB
+}
+
+' —— Caché centralizada ——
+node "Servidor de Caché" as CacheSrv {
+  artifact "Redis/Memcached" as CacheSoft
+}
+
+' —— Base de Datos ——
+node "Servidor de Base de Datos" as DBSrv {
+  artifact "TiendaDB" as DB
+}
+
+' —— Conexiones visibles ——
+Cliente -- WebSrv : HTTP/HTTPS
+WebSrv -- AppSrvA : Proxy/Load Balancing
+WebSrv -- AppSrvB : Proxy/Load Balancing
+
+' Acceso a caché (lecturas/escrituras rápidas)
+AppSrvA -- CacheSrv : TCP (Redis/Memcached)
+AppSrvB -- CacheSrv : TCP (Redis/Memcached)
+
+' Acceso a BD para aciertos en frío / escritura
+AppSrvA -- DBSrv   : JDBC/SQL
+AppSrvB -- DBSrv   : JDBC/SQL
+
+' —— Aristas ocultas para airear el layout vertical ——
+Cliente -[hidden]- WebSrv
+WebSrv  -[hidden]- AppSrvA
+WebSrv  -[hidden]- AppSrvB
+AppSrvA -[hidden]- CacheSrv
+AppSrvB -[hidden]- CacheSrv
+CacheSrv-[hidden]- DBSrv
+@enduml

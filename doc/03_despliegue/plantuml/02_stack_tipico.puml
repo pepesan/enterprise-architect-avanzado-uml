@@ -1,0 +1,28 @@
+@startuml
+left to right direction
+skinparam linetype ortho
+skinparam defaultFontSize 16
+hide stereotype
+
+' Aumenta espacio vertical
+skinparam ranksep 200
+
+
+' Cliente
+node "Cliente (Navegador)" as Cliente
+
+' Servidor de aplicaciones con artefacto
+node "Servidor de Aplicaciones" as AppSrv {
+  artifact "WebApp.war" as WebApp
+}
+
+' Servidor de base de datos con artefacto
+node "Servidor de Base de Datos" as DBSrv {
+  artifact "TiendaDB" as DB
+}
+
+' Conexiones
+Cliente -- AppSrv : HTTP/HTTPS
+AppSrv -- DBSrv : JDBC/SQL
+@enduml
+
