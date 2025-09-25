@@ -1,0 +1,17 @@
+@startuml
+actor Usuario
+participant "Frontend" as FE
+participant "Servicio de Perfil" as Perfil
+participant "Servicio de Recomendaciones" as Recs
+
+Usuario -> FE : Abrir panel principal
+FE -> Perfil : GET /perfil\nAuthorization: Bearer <token>
+Perfil --> FE : 200 OK + datos usuario
+
+opt Usuario logueado
+  FE -> Recs : GET /recomendaciones?user=sub
+  Recs --> FE : Lista de recomendaciones
+end
+
+FE --> Usuario : Mostrar panel con datos\n(+ recomendaciones si aplica)
+@enduml

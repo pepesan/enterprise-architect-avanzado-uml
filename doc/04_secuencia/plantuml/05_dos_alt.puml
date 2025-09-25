@@ -1,0 +1,32 @@
+@startuml
+actor Usuario
+participant "Frontend" as FE
+participant "Servicio de Perfil" as Perfil
+participant "Servicio de Autenticación" as Auth
+database "Base de Datos" as DB
+
+Usuario -> FE : Solicitar "Ver mi perfil"
+FE -> Perfil : GET /perfil\nAuthorization: Bearer <access_token>
+Perfil -> Auth : Validar <access_token>
+
+alt Token válido
+  Auth --> Perfil : OK (claims: sub, roles, exp)
+
+  alt Consulta exitosa a BD
+    Perfil -> DB : Consultar perfil(sub)
+    DB --> Perfil : Datos de perfil
+    Perfil --> FE : 200 OK + Perfil JSON
+    FE --> Usuario : Mostrar perfil
+  else Error en BD
+    Perfil -> DB : Consultar perfil(sub)
+    DB --> Perfil : Error
+    Perfil --> FE : 500 Internal Server Error
+    FE --> Usuario : Mostrar mensaje de error
+  end
+
+else Token inválido o expirado
+  Auth --> Perfil : 401 Invalid token
+  Perfil --> FE : 401 Unauthorized
+  FE --> Usuario : Solicitar re-login
+end
+@enduml

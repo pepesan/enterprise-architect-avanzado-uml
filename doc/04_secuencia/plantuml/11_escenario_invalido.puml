@@ -1,0 +1,14 @@
+@startuml
+actor Usuario
+participant "Frontend" as FE
+participant "Servicio de Pedidos" as Pedidos
+
+Usuario -> FE : Cancelar pedido #1234
+FE -> Pedidos : DELETE /pedidos/1234\nAuthorization: <token user=U001>
+
+group neg: Interacción inválida (pedido no pertenece al usuario)
+  Pedidos --> FE : 403 Forbidden
+  FE --> Usuario : No tiene permisos para cancelar este pedido
+end
+@enduml
+

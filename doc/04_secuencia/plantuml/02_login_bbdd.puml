@@ -1,0 +1,13 @@
+@startuml
+actor Usuario
+participant "Frontend" as FE
+participant "Servicio de Autenticación" as Auth
+database "Base de Datos" as DB
+
+Usuario -> FE : Introduce credenciales
+FE -> Auth : Enviar credenciales
+Auth -> DB : Consultar usuario y contraseña
+DB --> Auth : Resultado de la consulta
+Auth --> FE : Respuesta (éxito/fracaso)
+FE --> Usuario : Mostrar resultado
+@enduml

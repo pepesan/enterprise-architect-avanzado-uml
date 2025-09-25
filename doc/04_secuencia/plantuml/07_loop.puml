@@ -1,0 +1,14 @@
+@startuml
+actor Usuario
+participant "Frontend" as FE
+participant "Servicio de Pedidos" as Orders
+
+Usuario -> FE : Consultar pedidos recientes
+
+loop Hasta 3 intentos
+  FE -> Orders : GET /pedidos recientes
+  Orders --> FE : Error temporal (503)
+end
+
+FE --> Usuario : Mostrar error\n"No se pudieron recuperar los pedidos"
+@enduml

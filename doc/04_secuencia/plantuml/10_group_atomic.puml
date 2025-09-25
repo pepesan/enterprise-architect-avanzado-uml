@@ -1,0 +1,21 @@
+@startuml
+actor Usuario
+participant "Frontend" as FE
+participant "Servicio de Carrito" as Cart
+participant "Servicio de Inventario" as Inv
+database "Base de Datos" as DB
+
+Usuario -> FE : Confirmar compra
+FE -> Cart : POST /checkout
+
+group Transacción atómica: verificación y registro
+  Cart -> Inv : Verificar stock
+  Inv --> Cart : Stock disponible
+  Cart -> DB : Descontar stock y registrar pedido
+  DB --> Cart : OK
+end
+
+Cart --> FE : Pedido confirmado
+FE --> Usuario : Mostrar confirmación
+@enduml
+

@@ -1,0 +1,25 @@
+@startuml
+actor Usuario1
+actor Usuario2
+participant "Frontend" as FE
+participant "Servicio de Pedidos" as Pedidos
+participant "Servicio de Inventario" as Inv
+database "Base de Datos" as DB
+
+Usuario1 -> FE : Comprar producto X
+Usuario2 -> FE : Comprar producto X
+
+FE -> Pedidos : Solicitud compra (Usuario1)
+FE -> Pedidos : Solicitud compra (Usuario2)
+
+critical Actualización de stock
+  Pedidos -> Inv : Verificar stock
+  Inv -> DB : SELECT cantidad FROM productos WHERE id=X
+  DB --> Inv : cantidad=1
+  Inv -> DB : UPDATE productos SET cantidad=0 WHERE id=X
+  DB --> Inv : OK
+end
+
+Pedidos --> FE : Confirmación (Usuario que entró primero)
+Pedidos --> FE : Error stock agotado (Usuario que entró después)
+@enduml

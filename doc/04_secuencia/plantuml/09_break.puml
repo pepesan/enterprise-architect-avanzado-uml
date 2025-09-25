@@ -1,0 +1,24 @@
+@startuml
+actor Usuario
+participant "Frontend" as FE
+participant "Servicio de Pedidos" as Pedidos
+participant "Pasarela de Pagos" as Pago
+participant "Servicio de Notificaciones" as Notif
+
+Usuario -> FE : Confirmar pedido
+FE -> Pedidos : POST /crearPedido
+Pedidos -> Pago : Procesar pago
+
+break Pago rechazado
+  Pago --> Pedidos : Error de pago
+  Pedidos --> FE : 402 Payment Required
+  FE --> Usuario : Mostrar error de pago
+end
+
+' Flujo normal si el pago fue aceptado
+Pago --> Pedidos : Pago aceptado
+Pedidos --> Notif : Enviar email confirmación
+Notif --> Pedidos : OK
+Pedidos --> FE : Pedido confirmado
+FE --> Usuario : Mostrar confirmación
+@enduml

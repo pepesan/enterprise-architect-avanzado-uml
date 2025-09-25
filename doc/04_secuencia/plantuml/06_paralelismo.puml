@@ -1,0 +1,25 @@
+@startuml
+actor Usuario
+participant "Frontend" as FE
+participant "Servicio de Perfil" as Perfil
+database "Base de Datos" as DB
+participant "Servicio de Notificaciones" as Notif
+participant "Servicio de Pedidos" as Orders
+
+Usuario -> FE : Ver panel personal
+FE -> Perfil : GET /panel\nAuthorization: Bearer <token>
+
+par Datos de perfil
+  Perfil -> DB : SELECT perfil(sub)
+  DB --> Perfil : Perfil
+else Notificaciones
+  Perfil -> Notif : GET /notificaciones
+  Notif --> Perfil : Lista notificaciones
+else Pedidos
+  Perfil -> Orders : GET /pedidos recientes
+  Orders --> Perfil : Últimos pedidos
+end
+
+Perfil --> FE : 200 OK\n{perfil, notificaciones, pedidos}
+FE --> Usuario : Mostrar panel
+@enduml

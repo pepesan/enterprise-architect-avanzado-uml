@@ -1,0 +1,20 @@
+@startuml
+actor Usuario
+participant "Frontend" as FE
+participant "Servicio de Autenticación" as Auth
+database "Base de Datos" as DB
+
+Usuario -> FE : Introduce credenciales
+FE -> Auth : Enviar credenciales
+Auth -> DB : Consultar usuario y contraseña
+DB --> Auth : Resultado de la consulta
+
+alt Credenciales válidas
+    Auth -> Auth : Generar token (JWT)
+    Auth --> FE : Token de sesión
+    FE --> Usuario : Inicio de sesión exitoso\n(se guarda el token)
+else Credenciales inválidas
+    Auth --> FE : Error de autenticación
+    FE --> Usuario : Mostrar error
+end
+@enduml
