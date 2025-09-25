@@ -1,0 +1,15 @@
+@startuml
+title Sistema de Compras - Include / Extend
+
+actor "Cliente" as C
+
+usecase "Realizar pedido" as UC_Pedido
+usecase "Pagar pedido" as UC_Pago
+usecase "Autenticarse" as UC_Login
+usecase "Aplicar descuento" as UC_Descuento
+
+C --> UC_Pedido
+UC_Pedido --> UC_Pago : <<include>>
+UC_Pedido --> UC_Login : <<include>>
+UC_Pago --> UC_Descuento : <<extend>>
+@enduml

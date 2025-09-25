@@ -1,0 +1,20 @@
+@startuml
+title Sistema de Biblioteca - Generalización de Actores y Casos de Uso
+
+actor "Usuario" as U
+actor "Estudiante" as E
+actor "Profesor" as P
+
+U <|-- E
+U <|-- P
+
+usecase "Acceder catálogo" as UC_Catalogo
+usecase "Solicitar préstamo" as UC_Prestamo
+usecase "Renovar préstamo" as UC_Renovar
+
+UC_Prestamo <|-- UC_Renovar
+
+U --> UC_Catalogo
+E --> UC_Prestamo
+P --> UC_Prestamo
+@enduml

@@ -1,0 +1,11 @@
+@startuml
+title Sistema de Autenticación - Básico
+
+actor "Usuario" as U
+
+usecase "Iniciar sesión" as UC_Login
+usecase "Cerrar sesión" as UC_Logout
+
+U --> UC_Login
+U --> UC_Logout
+@enduml

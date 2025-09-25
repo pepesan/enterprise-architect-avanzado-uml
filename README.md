@@ -9,6 +9,7 @@ Este repositorio contiene ejemplos de diagramas UML y modelos utilizados en el c
   - `03_despliegue/`: Contiene ejemplos de diagramas de despliegue UML.
   - `04_secuencia/`: Contiene ejemplos de diagramas de secuencia UML.
   - `05_actividad/`: Contiene ejemplos de diagramas de actividad UML.
+  - `06_casos_uso/`: Contiene ejemplos de diagramas de casos de uso UML.
   
 ## Estructura de carpetas de ejemplos diagramas UML
 - `svg`: Contiene imágenes SVG de los diagramas UML.
