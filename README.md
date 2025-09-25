@@ -16,4 +16,6 @@ Este repositorio contiene ejemplos de diagramas UML y modelos utilizados en el c
 - `plantuml`: Contiene archivos PlantUML para generar los diagramas UML.
  
 ## Licencia
-Este proyecto está licenciado bajo la Licencia CC-BY-NC-SA 4.0. Consulta el archivo LICENSE para más detalles.
+Este proyecto está licenciado bajo la Licencia CC-BY-NC-SA 4.0.
+Bajo la propiedad de su auntor original: David Vaquero Santiago < pepesan en gmail punto com>
+Consulta el archivo LICENSE para más detalles.
