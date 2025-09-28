@@ -1,0 +1,29 @@
+@startuml
+object Usuario
+object APIGateway
+object OrderService
+object PaymentService
+object InventoryService
+object Broker
+
+' Flujo síncrono inicial
+Usuario --> APIGateway      : 1. POST /orders
+APIGateway --> OrderService : 2. crearPedido()
+OrderService --> InventoryService : 2.1 verificarStock()
+InventoryService --> OrderService : 2.2 ok
+
+OrderService --> PaymentService : 3. procesarPago()
+PaymentService --> OrderService : 3.1 confirmado
+
+' Publicación de evento asíncrono
+OrderService ..> Broker : 4. publish("order.created")
+
+' Suscriptores (procesan en otro momento)
+Broker ..> InventoryService : 5a. event("order.created")  ' p.ej. reservar stock
+Broker ..> PaymentService   : 5b. event("order.created")  ' p.ej. conciliación
+Broker ..> AnalyticsService : 5c. event("order.created")  ' p.ej. métricas
+
+' Respuesta al usuario
+OrderService --> APIGateway : 6. confirmaciónPedido
+APIGateway --> Usuario      : 7. HTTP 201
+@enduml

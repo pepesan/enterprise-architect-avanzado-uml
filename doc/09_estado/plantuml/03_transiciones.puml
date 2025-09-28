@@ -1,0 +1,7 @@
+@startuml
+[*] --> Pendiente
+
+Pendiente --> Procesando : iniciar() / log("Pedido iniciado")
+Procesando --> Enviado   : enviar()  / actualizarStock()
+Enviado --> [*]
+@enduml

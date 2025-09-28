@@ -1,0 +1,17 @@
+@startuml
+[*] --> EvaluandoPedido
+
+state Decision <<choice>>
+
+EvaluandoPedido --> Decision
+
+Decision --> Aprobado        : [monto <= 1000]
+Decision --> RevisionManual  : [monto > 1000 and monto <= 5000]
+Decision --> Rechazado       : [monto > 5000]
+
+Aprobado --> [*]
+RevisionManual --> Aprobado  : aprobar()
+RevisionManual --> Rechazado : rechazar()
+Rechazado --> [*]
+@enduml
+

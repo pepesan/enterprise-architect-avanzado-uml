@@ -1,0 +1,12 @@
+@startuml
+[*] --> Pedido
+
+state Pedido {
+  [*] --> Preparando
+  Preparando --> Empaquetando : listo()
+  Empaquetando --> Enviado    : enviar()
+  Enviado --> [*]
+}
+
+Pedido --> [*] : entregar()
+@enduml

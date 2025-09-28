@@ -1,0 +1,49 @@
+@startuml
+object cliente1 {
+  id = 501
+  nombre = "Laura Sánchez"
+  email = "laura@example.com"
+}
+
+object pedido1 {
+  id = 301
+  fecha = "2025-09-27"
+  total = 200.00
+  clienteId = 501
+}
+
+object detalle1 {
+  id = 1
+  pedidoId = 301
+  productoId = 901
+  cantidad = 2
+  subtotal = 100.00
+}
+
+object detalle2 {
+  id = 2
+  pedidoId = 301
+  productoId = 902
+  cantidad = 1
+  subtotal = 100.00
+}
+
+object producto1 {
+  id = 901
+  nombre = "Portátil"
+  precio = 50.00
+}
+
+object producto2 {
+  id = 902
+  nombre = "Monitor"
+  precio = 100.00
+}
+
+' Enlaces visuales
+cliente1 -- pedido1
+pedido1 -- detalle1
+pedido1 -- detalle2
+detalle1 -- producto1
+detalle2 -- producto2
+@enduml

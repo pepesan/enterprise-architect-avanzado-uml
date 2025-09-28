@@ -1,0 +1,18 @@
+@startuml
+object Usuario
+object Frontend
+object AuthService
+object DB
+
+Usuario --> Frontend : 1. login(usuario, pass)
+Frontend --> AuthService : 2. validarCredenciales()
+AuthService --> DB : 2.1 consultarUsuario()
+DB --> AuthService : 2.2 datosUsuario
+
+' Flujo alternativo
+AuthService --> Frontend : 3a. tokenJWT [si válido]
+AuthService --> Frontend : 3b. errorAuth [si inválido]
+
+Frontend --> Usuario : 4a. mostrarResultadoOK() [si válido]
+Frontend --> Usuario : 4b. mostrarError() [si inválido]
+@enduml

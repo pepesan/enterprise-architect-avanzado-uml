@@ -1,0 +1,18 @@
+@startuml
+[*] --> Pedido
+
+state Pedido {
+  --
+  state Pago {
+    [*] --> PendientePago
+    PendientePago --> Confirmado : pagar()
+  }
+  --
+  state Envío {
+    [*] --> Preparando
+    Preparando --> Enviado : enviar()
+  }
+}
+
+Pedido --> [*] : finalizar()
+@enduml

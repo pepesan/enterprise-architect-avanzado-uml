@@ -1,0 +1,25 @@
+@startuml
+object cliente1 {
+  id = 501
+  nombre = "Carlos Gómez"
+  email = "carlos@example.com"
+}
+
+object pedido1 {
+  id = 201
+  fecha = "2025-09-20"
+  total = 120.00
+  clienteId = 501
+}
+
+object pedido2 {
+  id = 202
+  fecha = "2025-09-25"
+  total = 80.50
+  clienteId = 501
+}
+
+cliente1 -- pedido1
+cliente1 -- pedido2
+@enduml
+

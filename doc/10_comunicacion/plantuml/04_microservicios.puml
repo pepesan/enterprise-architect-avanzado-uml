@@ -1,0 +1,22 @@
+@startuml
+object Usuario
+object APIGateway
+object OrderService
+object PaymentService
+object InventoryService
+
+Usuario --> APIGateway : 1. POST /orders
+APIGateway --> OrderService : 2. crearPedido()
+
+' Validación de inventario
+OrderService --> InventoryService : 2.1 verificarStock()
+InventoryService --> OrderService : 2.2 resultadoStock
+
+' Procesamiento de pago
+OrderService --> PaymentService : 3.1 procesarPago()
+PaymentService --> OrderService : 3.2 resultadoPago
+
+' Respuesta final
+OrderService --> APIGateway : 4. confirmaciónPedido
+APIGateway --> Usuario : 5. respuesta HTTP 201
+@enduml

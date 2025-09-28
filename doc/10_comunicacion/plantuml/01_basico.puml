@@ -1,0 +1,13 @@
+@startuml
+' Participantes (objetos/roles)
+object Usuario
+object Frontend
+object AuthService
+
+' Mensajes numerados con dirección
+Usuario --> Frontend : 1. login(usuario, pass)
+Frontend --> AuthService : 2. validarCredenciales()
+AuthService --> Frontend : 3. tokenJWT
+Frontend --> Usuario : 4. mostrarResultado()
+@enduml
+

@@ -1,0 +1,8 @@
+@startuml
+[*] --> State1
+State1 --> State2 : evento1
+State2 --> State3 : evento2
+State3 --> [*] : eventoFinal
+@enduml
+
+

@@ -1,0 +1,15 @@
+@startuml
+[*] --> Inicio
+
+Inicio --> Paso1
+Inicio --> Paso2
+
+state J <<junction>>
+
+Paso1 --> J
+Paso2 --> J
+
+J --> Final
+
+Final --> [*]
+@enduml

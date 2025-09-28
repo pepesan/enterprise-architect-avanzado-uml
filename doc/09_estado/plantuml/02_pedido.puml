@@ -1,0 +1,9 @@
+@startuml
+[*] --> PedidoPendiente
+
+PedidoPendiente --> PedidoAprobado : pagar() [saldo >= total]
+PedidoPendiente --> PedidoRechazado : pagar() [saldo < total]
+
+PedidoAprobado --> [*] : enviar()
+PedidoRechazado --> [*]
+@enduml

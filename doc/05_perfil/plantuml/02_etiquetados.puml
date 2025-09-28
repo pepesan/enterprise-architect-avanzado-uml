@@ -1,0 +1,37 @@
+@startuml
+' ---- Estilos por estereotipo ----
+skinparam class {
+  BackgroundColor<<Service>> LightBlue
+  BorderColor<<Service>> Blue
+  BackgroundColor<<Repository>> LightGreen
+  BorderColor<<Repository>> DarkGreen
+}
+
+' ---- Perfil emulado ----
+package "MyProfile" <<profile>> {
+  class «Service» <<stereotype>> {
+    +sla : int
+  }
+  class «Repository» <<stereotype>> {
+    +critical : boolean
+  }
+}
+
+' ---- Modelo con aplicación del perfil ----
+package "Modelo de Negocio" {
+  class Pedido <<Service>>
+  note right of Pedido
+    sla = 200
+  end note
+
+  class PedidoRepo <<Repository>>
+  note right of PedidoRepo
+    critical = true
+  end note
+
+  Pedido --> PedidoRepo : usa
+}
+
+' ---- Relación entre paquetes ----
+"Modelo de Negocio" ..> "MyProfile" : <<apply>>
+@enduml

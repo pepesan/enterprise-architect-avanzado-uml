@@ -1,0 +1,19 @@
+@startuml
+[*] --> Validacion
+
+state Decision <<choice>>
+
+Validacion --> Decision : evaluar()
+Decision --> Preparacion : [score >= 0.7]
+Decision --> Rechazado  : [score < 0.7]
+
+state Preparacion {
+  [*] --> Preparando
+  Preparando --> Enviado : enviar()
+  Enviado --> [*]
+}
+
+Rechazado --> [*]
+Preparacion --> [*] : entregar()
+@enduml
+

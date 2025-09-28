@@ -1,0 +1,45 @@
+@startuml
+' Estilos por estereotipo (opcional)
+skinparam component {
+  BackgroundColor<<Microservice>> LightBlue
+  BorderColor<<Microservice>> Blue
+  BackgroundColor<<API>> LightYellow
+  BorderColor<<API>> GoldenRod
+  BackgroundColor<<Database>> LightGreen
+  BorderColor<<Database>> DarkGreen
+  BackgroundColor<<MessageBroker>> LightGray
+  BorderColor<<MessageBroker>> DimGray
+  BackgroundColor<<ExternalService>> LightPink
+  BorderColor<<ExternalService>> Crimson
+}
+
+package "Plataforma" {
+  [API Gateway] <<API>>
+  [Kafka] <<MessageBroker>>
+}
+
+package "Catálogo" {
+  [CatalogService] <<Microservice>>
+  [CatalogDB] <<Database>>
+  [CatalogService] --> [CatalogDB] : CRUD
+}
+
+package "Pedidos" {
+  [OrderService] <<Microservice>>
+  [OrderDB] <<Database>>
+  [OrderService] --> [OrderDB] : CRUD
+}
+
+package "Pagos" {
+  [PaymentService] <<Microservice>>
+  [PaymentProvider] <<ExternalService>>
+  [PaymentService] ..> [PaymentProvider] : REST
+}
+
+[API Gateway] --> [OrderService] : REST /orders
+[API Gateway] --> [CatalogService] : REST /catalog
+[OrderService] --> [PaymentService] : REST /pay
+[OrderService] ..> [Kafka] : publicar "order.created"
+[PaymentService] ..> [Kafka] : publicar "payment.confirmed"
+[CatalogService] ..> [Kafka] : consumir "order.created"
+@enduml
