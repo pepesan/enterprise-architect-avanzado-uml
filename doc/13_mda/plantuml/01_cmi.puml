@@ -1,0 +1,21 @@
+@startuml
+skinparam shadowing false
+title CIM — Procesos de negocio (plataforma de cursos)
+
+actor Alumno
+actor Profesor
+actor Administrador
+
+usecase "Explorar catálogo de cursos" as UC1
+usecase "Inscribirse en curso" as UC2
+usecase "Asignar docente a curso" as UC3
+usecase "Gestionar pagos de matrícula" as UC4
+
+Alumno --> UC1
+Alumno --> UC2
+Alumno --> UC4
+Profesor --> UC3
+Administrador --> UC3
+Administrador --> UC4
+@enduml
+

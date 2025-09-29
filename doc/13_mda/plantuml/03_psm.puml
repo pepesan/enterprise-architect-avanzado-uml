@@ -1,0 +1,73 @@
+@startuml
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+title PSM — Específico de plataforma (Java/JPA + PostgreSQL)
+
+package "Capa Persistencia (JPA)" {
+  class UsuarioEntity <<JPA @Entity>> {
+    +UUID idUsuario @Id
+    +String nombre
+    +String email @Column(unique=true)
+    +Rol rol @Enumerated
+  }
+
+  class CursoEntity <<JPA @Entity>> {
+    +UUID idCurso @Id
+    +String titulo
+    +String descripcion
+  }
+
+  class MatriculaEntity <<JPA @Entity>> {
+    +UUID idMatricula @Id
+    +Instant fechaAlta
+    +EstadoMatricula estado @Enumerated
+  }
+
+  class PagoEntity <<JPA @Entity>> {
+    +UUID idPago @Id
+    +Instant fechaPago
+    +BigDecimal importe
+    +MetodoPago metodo @Enumerated
+  }
+
+  UsuarioEntity "1" -- "0..*" MatriculaEntity : @OneToMany
+  CursoEntity   "1" -- "0..*" MatriculaEntity : @OneToMany
+  MatriculaEntity "1" -- "0..*" PagoEntity    : @OneToMany
+}
+
+package "Esquema SQL (PostgreSQL)" {
+  class usuario <<table>> {
+    {PK} id_usuario : UUID
+    nombre : VARCHAR(120) NOT NULL
+    email  : VARCHAR(150) UNIQUE NOT NULL
+    rol    : rol_usuario NOT NULL
+  }
+
+  class curso <<table>> {
+    {PK} id_curso : UUID
+    titulo : VARCHAR(200) NOT NULL
+    descripcion : TEXT
+  }
+
+  class matricula <<table>> {
+    {PK} id_matricula : UUID
+    fecha_alta : TIMESTAMP NOT NULL
+    estado : estado_matricula NOT NULL
+    {FK} id_usuario : UUID
+    {FK} id_curso : UUID
+    -- UNIQUE(id_usuario, id_curso)
+  }
+
+  class pago <<table>> {
+    {PK} id_pago : UUID
+    fecha_pago : TIMESTAMP NOT NULL
+    importe : NUMERIC(12,2) NOT NULL
+    metodo : metodo_pago NOT NULL
+    {FK} id_matricula : UUID
+  }
+
+  usuario ||--o{ matricula : FK id_usuario
+  curso   ||--o{ matricula : FK id_curso
+  matricula ||--o{ pago    : FK id_matricula
+}
+@enduml

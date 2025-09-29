@@ -1,0 +1,35 @@
+@startuml
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+title PIM — Modelo de dominio (independiente de plataforma)
+
+class Usuario {
+  +idUsuario
+  +nombre
+  +email
+  +rol  ' ALUMNO | PROFESOR | ADMIN
+}
+
+class Curso {
+  +idCurso
+  +titulo
+  +descripcion
+}
+
+class Matricula {
+  +idMatricula
+  +fechaAlta
+  +estado  ' ACTIVA | PENDIENTE | BAJA
+}
+
+class Pago {
+  +idPago
+  +fechaPago
+  +importe
+  +metodo  ' TARJETA | TRANSFERENCIA | PAYPAL
+}
+
+Usuario "1" -- "0..*" Matricula : realiza >
+Curso  "1" -- "0..*" Matricula : corresponde a >
+Matricula "1" -- "0..*" Pago : origina >
+@enduml
