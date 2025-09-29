@@ -1,0 +1,29 @@
+@startuml
+skinparam shadowing false
+left to right direction
+title Modelo Lógico — Biblioteca (Relacional)
+
+entity Usuario {
+  {PK} idUsuario
+  nombre
+  email
+}
+
+entity Libro {
+  {PK} isbn
+  titulo
+  autor
+  disponible
+}
+
+entity Reserva {
+  {PK} idReserva
+  fecha
+  estado
+  {FK} idUsuario
+  {FK} isbnLibro
+}
+
+Usuario ||--o{ Reserva : idUsuario (FK)
+Libro   ||--o{ Reserva : isbnLibro (FK)
+@enduml

@@ -1,0 +1,27 @@
+@startuml
+skinparam shadowing false
+skinparam classAttributeIconSize 0
+title Modelo Conceptual — Biblioteca
+
+class Usuario {
+  +idUsuario
+  +nombre
+  +email
+}
+
+class Libro {
+  +isbn
+  +titulo
+  +autor
+  +disponible
+}
+
+class Reserva {
+  +idReserva
+  +fecha
+  +estado
+}
+
+Usuario "1" -- "0..*" Reserva : realiza >
+Reserva "*" -- "*" Libro : incluye >
+@enduml

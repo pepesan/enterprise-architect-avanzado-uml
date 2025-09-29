@@ -1,0 +1,39 @@
+@startuml
+skinparam shadowing false
+left to right direction
+title Modelo Lógico — Relacional
+
+entity Usuario {
+  {PK} idUsuario
+  nombre
+  email
+  rol
+}
+
+entity Curso {
+  {PK} idCurso
+  titulo
+  descripcion
+}
+
+entity Matricula {
+  {PK} idMatricula
+  fechaAlta
+  estado
+  {FK} idUsuario
+  {FK} idCurso
+  -- Restricción: UNIQUE(idUsuario, idCurso)
+}
+
+entity Pago {
+  {PK} idPago
+  fechaPago
+  importe
+  metodo
+  {FK} idMatricula
+}
+
+Usuario ||--o{ Matricula : idUsuario (FK)
+Curso   ||--o{ Matricula : idCurso (FK)
+Matricula ||--o{ Pago : idMatricula (FK)
+@enduml

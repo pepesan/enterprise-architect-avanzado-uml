@@ -1,0 +1,29 @@
+@startuml
+skinparam shadowing false
+left to right direction
+title Modelo Físico — Biblioteca (PostgreSQL)
+
+entity Usuario_p {
+  {PK} idUsuario : UUID
+  nombre         : VARCHAR(100) NOT NULL
+  email          : VARCHAR(150) UNIQUE NOT NULL
+}
+
+entity Libro_p {
+  {PK} isbn      : VARCHAR(13)
+  titulo         : VARCHAR(200) NOT NULL
+  autor          : VARCHAR(100)
+  disponible     : BOOLEAN DEFAULT TRUE
+}
+
+entity Reserva_p {
+  {PK} idReserva : UUID
+  fecha          : TIMESTAMP NOT NULL
+  estado         : VARCHAR(20)
+  {FK} idUsuario : UUID
+  {FK} isbnLibro : VARCHAR(13)
+}
+
+Usuario_p ||--o{ Reserva_p : FK (idUsuario → Usuario_p.idUsuario)
+Libro_p   ||--o{ Reserva_p : FK (isbnLibro → Libro_p.isbn)
+@enduml
