@@ -1,0 +1,48 @@
+@startuml
+title Biblioteca en línea — Vista Física (Despliegue)
+
+skinparam shadowing false
+skinparam nodesep 40
+skinparam ranksep 30
+
+node "Cliente" as Cliente {
+  artifact "Web SPA\n/ App Móvil" as SPA
+}
+
+node "Internet" as Net {
+}
+
+node "DMZ" as DMZ {
+  node "Balanceador\n/API Gateway" as LB
+}
+
+node "Cluster Aplicaciones" as App {
+  node "Servicio API\n(REST/GraphQL)" as API {
+    artifact "App Biblioteca\n(contenedor)" as AppSvc
+  }
+  node "Servicio Tareas\n(Scheduler/Workers)" as Jobs {
+    artifact "Recordatorios\n(cont.)" as Reminders
+  }
+}
+
+node "Servicios Externos" as Ext {
+  node "SMTP" as SMTP
+  node "SMS Gateway" as SMS
+}
+
+database "BD Relacional\n(PostgreSQL/MySQL)" as DB
+queue "Cola de Mensajes\n(opcional)" as MQ
+
+SPA --> Net
+Net --> LB
+LB --> API
+API --> DB
+Jobs --> DB
+API --> MQ
+Jobs --> MQ
+API --> SMTP : enviar email
+API --> SMS : enviar SMS
+Jobs --> SMTP : envíos batch
+Jobs --> SMS : envíos batch
+SPA ..> API : HTTPS
+@enduml

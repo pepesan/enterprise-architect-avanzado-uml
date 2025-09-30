@@ -1,0 +1,31 @@
+@startuml
+title Tipos de Relaciones en UML (Clases)
+
+class ClaseA
+class ClaseB
+class ClaseC
+class ClaseD
+class ClaseE
+class ClaseF
+class ClaseG
+
+' Asociación
+ClaseA --> ClaseB : asociación
+
+' Dependencia
+ClaseA ..> ClaseC : dependencia
+
+' Herencia / Generalización
+ClaseD <|-- ClaseE : herencia
+
+' Implementación de interfaz
+interface IAccion
+IAccion <|.. ClaseF : implementación
+
+' Agregación
+ClaseG o-- ClaseA : agregación
+
+' Composición
+ClaseG *-- ClaseB : composición
+
+@enduml

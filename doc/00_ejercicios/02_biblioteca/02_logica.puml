@@ -1,0 +1,69 @@
+@startuml
+title Biblioteca en línea — Vista Lógica (Componentes)
+
+skinparam componentStyle rectangle
+skinparam shadowing false
+left to right direction
+
+package "Presentación" {
+  [API REST\n/ GraphQL] as API
+}
+
+package "Aplicación" {
+  [SrvUsuarios] as SrvUsuarios
+  [SrvCatalogo] as SrvCatalogo
+  [SrvPrestamos] as SrvPrestamos
+  [SrvNotificaciones] as SrvNotificaciones
+  [Scheduler\nRecordatorios] as Scheduler
+}
+
+package "Dominio" {
+  [Usuario]
+  [Libro]
+  [Ejemplar]
+  [Prestamo]
+  [Notificacion]
+}
+
+package "Datos (Puertos)" {
+  [UsuarioRepo] <<interface>>
+  [LibroRepo] <<interface>>
+  [EjemplarRepo] <<interface>>
+  [PrestamoRepo] <<interface>>
+  [NotificacionRepo] <<interface>>
+}
+
+package "Infraestructura (Adaptadores)" {
+  [UsuarioRepoJPA]
+  [LibroRepoJPA]
+  [EjemplarRepoJPA]
+  [PrestamoRepoJPA]
+  [NotificacionRepoJPA]
+  [EmailNotificador] <<adapter>>
+  [SMSNotificador] <<adapter>>
+}
+
+API --> SrvUsuarios
+API --> SrvCatalogo
+API --> SrvPrestamos
+API --> SrvNotificaciones
+
+Scheduler --> SrvNotificaciones
+
+SrvUsuarios --> [UsuarioRepo]
+SrvCatalogo --> [LibroRepo]
+SrvCatalogo --> [EjemplarRepo]
+SrvPrestamos --> [UsuarioRepo]
+SrvPrestamos --> [EjemplarRepo]
+SrvPrestamos --> [PrestamoRepo]
+SrvNotificaciones --> [NotificacionRepo]
+SrvNotificaciones --> [EmailNotificador]
+SrvNotificaciones --> [SMSNotificador]
+
+[UsuarioRepoJPA] -up-|> [UsuarioRepo]
+[LibroRepoJPA] -up-|> [LibroRepo]
+[EjemplarRepoJPA] -up-|> [EjemplarRepo]
+[PrestamoRepoJPA] -up-|> [PrestamoRepo]
+[NotificacionRepoJPA] -up-|> [NotificacionRepo]
+
+@enduml

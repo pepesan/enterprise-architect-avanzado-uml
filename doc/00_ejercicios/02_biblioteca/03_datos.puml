@@ -1,0 +1,65 @@
+@startuml
+title Biblioteca en línea — Vista de Datos (ER/Tablas)
+
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+
+class Usuario <<tabla>> {
+  +id: UUID <<PK>>
+  email: String <<UK>>
+  nombre: String
+  fecha_alta: Date
+  activo: Boolean
+}
+
+class Libro <<tabla>> {
+  +isbn: String <<PK>>
+  titulo: String
+  autor: String
+  anio_publicacion: int
+}
+
+class Ejemplar <<tabla>> {
+  +id: UUID <<PK>>
+  codigo_inventario: String <<UK>>
+  estado: String <<CHK[DISPONIBLE,PRESTADO,RESERVADO,DANIADO,BAJA]>>
+  libro_isbn: String <<FK Libro.isbn>>
+  idx(libro_isbn)
+}
+
+class Prestamo <<tabla>> {
+  +id: UUID <<PK>>
+  usuario_id: UUID <<FK Usuario.id>>
+  ejemplar_id: UUID <<FK Ejemplar.id>>
+  fecha_solicitud: DateTime
+  fecha_inicio: Date
+  fecha_vencimiento: Date
+  fecha_devolucion: Date?
+  estado: String <<CHK[PENDIENTE,ACTIVO,VENCIDO,DEVUELTO,CANCELADO]>>
+  UQ(ejemplar_id) where estado in ('ACTIVO')
+  idx(usuario_id, estado)
+}
+
+class Notificacion <<tabla>> {
+  +id: UUID <<PK>>
+  prestamo_id: UUID <<FK Prestamo.id>>
+  destinatario_email: String
+  medio: String <<CHK[EMAIL,SMS,PUSH]>>
+  tipo: String
+  fecha_programada: DateTime
+  fecha_envio: DateTime?
+  contenido: Text
+  idx(prestamo_id, fecha_programada)
+}
+
+Usuario "1" -- "0..*" Prestamo : usuario_id
+Libro "1" -- "1..*" Ejemplar : libro_isbn
+Ejemplar "1" -- "0..*" Prestamo : ejemplar_id
+Prestamo "1" -- "0..*" Notificacion : prestamo_id
+
+note bottom of Prestamo
+  Reglas:
+  - fecha_vencimiento > fecha_inicio
+  - Un ejemplar no puede estar en más de un préstamo ACTIVO
+end note
+@enduml

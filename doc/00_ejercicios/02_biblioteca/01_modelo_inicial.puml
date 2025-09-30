@@ -1,0 +1,218 @@
+@startuml
+title Biblioteca en línea — Modelo inicial (Dominio/Aplicación/Datos/Infraestructura)
+
+skinparam packageStyle rectangle
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+skinparam shadowing false
+
+' ======= Paquete: Dominio (modelo de negocio) =======
+package "Dominio" as D {
+
+  class Usuario {
+    +id: UUID
+    +nombre: String
+    +email: String
+    +fechaAlta: Date
+    +activo: Boolean
+    --
+    +actualizarDatos(nombre, email)
+  }
+
+  class Bibliotecario {
+    +numeroEmpleado: String
+    --
+    +incorporarEjemplar(e: Ejemplar)
+    +actualizarEjemplar(e: Ejemplar)
+  }
+
+  Usuario <|-- Bibliotecario
+
+  class Libro {
+    +isbn: String
+    +titulo: String
+    +autor: String
+    +anioPublicacion: int
+    --
+    +datosBibliograficos(): String
+  }
+
+  enum EstadoEjemplar {
+    DISPONIBLE
+    PRESTADO
+    RESERVADO
+    DANIADO
+    BAJA
+  }
+
+  class Ejemplar {
+    +id: UUID
+    +codigoInventario: String
+    +estado: EstadoEjemplar
+    --
+    +marcarDisponible()
+    +marcarPrestado()
+    +marcarDaniado()
+  }
+
+  Libro "1" -- "1..*" Ejemplar : contiene >
+
+  enum EstadoPrestamo {
+    PENDIENTE
+    ACTIVO
+    VENCIDO
+    DEVUELTO
+    CANCELADO
+  }
+
+  class Prestamo {
+    +id: UUID
+    +fechaSolicitud: Date
+    +fechaInicio: Date
+    +fechaVencimiento: Date
+    +fechaDevolucion: Date
+    +estado: EstadoPrestamo
+    --
+    +activar(fechaInicio, fechaVenc)
+    +registrarDevolucion(fechaDevol)
+    +marcarVencido()
+  }
+
+  Usuario "1" -- "0..*" Prestamo : solicita >
+  Prestamo "1" -- "1" Ejemplar : incluye >
+  Ejemplar "0..1" -- "0..1" Prestamo : < asociado
+
+  enum MedioNotificacion {
+    EMAIL
+    SMS
+    PUSH
+  }
+
+  class Notificacion {
+    +id: UUID
+    +tipo: String
+    +medio: MedioNotificacion
+    +fechaProgramada: Date
+    +fechaEnvio: Date
+    +contenido: String
+    --
+    +marcarEnviada(fechaEnvio)
+  }
+
+  Usuario "1" -- "0..*" Notificacion : destinatario >
+  Prestamo "1" -- "0..*" Notificacion : origina >
+
+  note top of Prestamo
+    Regla: fechaVencimiento > fechaInicio
+    Regla: un Ejemplar no puede estar en 2 préstamos ACTIVO a la vez
+    Regla: al devolver, estado -> DEVUELTO y Ejemplar -> DISPONIBLE
+  end note
+
+  note right of Ejemplar
+    La disponibilidad se deriva de "estado".
+  end note
+}
+
+' ======= Paquete: Aplicación (casos de uso/servicios) =======
+package "Aplicación" as A {
+  interface ServicioUsuarios {
+    +registrarUsuario(nombre, email): Usuario
+    +actualizarUsuario(id, nombre?, email?, activo?): Usuario
+  }
+
+  interface ServicioCatalogo {
+    +buscarLibros(filtro): List<Libro>
+    +listarEjemplares(libroIsbn): List<Ejemplar>
+  }
+
+  interface ServicioPrestamos {
+    +solicitarPrestamo(usuarioId, ejemplarId): Prestamo
+    +registrarDevolucion(prestamoId, fechaDevol): Prestamo
+    +marcarVencidos(fechaCorte): int
+  }
+
+  interface ServicioNotificaciones {
+    +programarRecordatorioVencimiento(prestamoId): Notificacion
+    +enviarPendientes(): int
+  }
+
+  interface Notificador {
+    +enviar(destinatarioEmail, mensaje): void
+  }
+}
+
+' ======= Paquete: Datos (persistencia / puertos) =======
+package "Datos" as DA {
+  interface UsuarioRepo {
+    +guardar(u: Usuario): Usuario
+    +buscarPorId(id: UUID): Usuario
+    +buscarPorEmail(email: String): Usuario
+  }
+
+  interface LibroRepo {
+    +guardar(l: Libro): Libro
+    +buscarPorIsbn(isbn: String): Libro
+    +buscar(filtro): List<Libro>
+  }
+
+  interface EjemplarRepo {
+    +guardar(e: Ejemplar): Ejemplar
+    +buscarPorId(id: UUID): Ejemplar
+    +listarPorLibro(isbn: String): List<Ejemplar>
+    +existePrestamoActivo(ejemplarId: UUID): Boolean
+  }
+
+  interface PrestamoRepo {
+    +guardar(p: Prestamo): Prestamo
+    +buscarPorId(id: UUID): Prestamo
+    +listarActivos(): List<Prestamo>
+    +listarVencidos(fechaCorte: Date): List<Prestamo>
+  }
+
+  interface NotificacionRepo {
+    +guardar(n: Notificacion): Notificacion
+    +listarPendientes(fechaHasta: Date): List<Notificacion>
+  }
+}
+
+' ======= Paquete: Infraestructura (adaptadores) =======
+package "Infraestructura" as I {
+  class EmailNotificador {
+    -smtpHost: String
+    -puerto: int
+    --
+    +enviar(destinatarioEmail, mensaje): void
+  }
+
+  class SMSNotificador {
+    -proveedorApi: String
+    --
+    +enviar(destinatarioTelefono, mensaje): void
+  }
+
+  class TareaProgramadaRecordatorios {
+    +ejecutarDiariamente()
+  }
+
+  Notificador <|.. EmailNotificador
+  Notificador <|.. SMSNotificador
+}
+
+' ======= Dependencias entre capas =======
+A.ServicioUsuarios ..> DA.UsuarioRepo
+A.ServicioCatalogo ..> DA.LibroRepo
+A.ServicioCatalogo ..> DA.EjemplarRepo
+A.ServicioPrestamos ..> DA.UsuarioRepo
+A.ServicioPrestamos ..> DA.EjemplarRepo
+A.ServicioPrestamos ..> DA.PrestamoRepo
+A.ServicioNotificaciones ..> DA.NotificacionRepo
+A.ServicioNotificaciones ..> A.Notificador
+
+' Dominio referenciado por servicios/repos
+D.Usuario ..> DA.UsuarioRepo : id/email
+D.Libro ..> DA.LibroRepo : isbn
+D.Ejemplar ..> DA.EjemplarRepo : id
+D.Prestamo ..> DA.PrestamoRepo : id
+D.Notificacion ..> DA.NotificacionRepo : id
+
+@enduml

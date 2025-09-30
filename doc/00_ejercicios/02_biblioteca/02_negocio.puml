@@ -1,0 +1,39 @@
+@startuml
+title Biblioteca en línea — Vista de Negocio (Casos de Uso)
+
+left to right direction
+skinparam shadowing false
+skinparam packageStyle rectangle
+
+actor "Usuario" as U
+actor "Bibliotecario" as B
+actor "Reloj del sistema" as R <<system>>
+
+rectangle "Servicios Biblioteca" {
+  usecase "Registrarse" as UC_Registrarse
+  usecase "Actualizar cuenta" as UC_Actualizar
+  usecase "Consultar catálogo" as UC_Catalogo
+  usecase "Solicitar préstamo" as UC_Solicitar
+  usecase "Devolver ejemplar" as UC_Devolver
+  usecase "Recibir recordatorio\nvencimiento" as UC_Recordatorio
+  usecase "Alta de ejemplar" as UC_AltaEj
+  usecase "Mantenimiento de ejemplar" as UC_MantEj
+  usecase "Ejecutar recordatorios\na vencidos" as UC_Batch
+
+  UC_Solicitar .> UC_Catalogo : «include»
+  UC_Recordatorio .> UC_Batch : «include»
+}
+
+U --> UC_Registrarse
+U --> UC_Actualizar
+U --> UC_Catalogo
+U --> UC_Solicitar
+U --> UC_Devolver
+U --> UC_Recordatorio
+
+B --> UC_AltaEj
+B --> UC_MantEj
+
+R --> UC_Batch
+
+@enduml

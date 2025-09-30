@@ -8,6 +8,8 @@ abstract class Persona {
 
   + getId(): int
   + setId(id: int): void
+  - showData(): void
+  # getNombre(): String
   {abstract} getDescripcion(): String
 }
 @enduml
