@@ -2,10 +2,11 @@
 class Categoria {
   - id: int
   - nombre: String
+  - parent_id: int
 }
 
 ' Una categoría puede tener subcategorías (relación reflexiva)
-Categoria "0..1" <-- "0..*" Categoria : padre / hijas
+Categoria "0..1" <-- "0..*" Categoria : parent_id
 
 note left of Categoria
 Asociación reflexiva:
