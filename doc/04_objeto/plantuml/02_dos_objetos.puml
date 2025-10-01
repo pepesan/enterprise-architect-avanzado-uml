@@ -1,5 +1,6 @@
 @startuml
 object cliente1 {
+  id = 102
   nombre = "Ana López"
   email = "ana@example.com"
 }
@@ -8,6 +9,7 @@ object pedido1 {
   id = 101
   fecha = "2025-09-28"
   total = 250.00
+  cliente_id = 102
 }
 
 cliente1 -- pedido1
