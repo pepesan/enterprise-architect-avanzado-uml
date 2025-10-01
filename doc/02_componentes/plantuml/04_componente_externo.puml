@@ -8,7 +8,8 @@ component "Proveedor de Pagos (externo)" as Pago <<external>>
 
 ' Interfaz proporcionada por el proveedor
 interface PagoService
-Pago - PagoService
+
+Pago - PagoService: <<provee>>
 
 ' Gestión de Pedidos requiere la interfaz de pago
 Pedidos - PagoService : <<requiere>>

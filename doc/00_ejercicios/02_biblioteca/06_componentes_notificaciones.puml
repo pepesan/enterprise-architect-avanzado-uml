@@ -1,0 +1,27 @@
+@startuml
+title Sistema de Notificaciones — Uso de Proveedor Externo
+
+skinparam shadowing false
+skinparam componentStyle rectangle
+
+package "SMTP SENDER (Proveedor Externo)" {
+  component "Proveedor Externo\n(API de envío)" as ext
+  ' Interfaz proporcionada por el proveedor
+  interface APISender
+}
+
+package "Mi Aplicación" {
+  component "Servicio de Usuarios" as user
+  component "Servicio de Catalogo" as catalog
+  component "Servicio de Préstamo" as prestamo
+  component "Servicio de Notificaciones" as notif
+}
+
+
+ext - APISender: <<provee>>
+
+' las notificaciones requieren la interfaz del proveedor
+notif - APISender : <<requiere>>
+
+@enduml
+

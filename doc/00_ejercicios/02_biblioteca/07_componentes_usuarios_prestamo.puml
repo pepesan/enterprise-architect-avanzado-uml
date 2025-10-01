@@ -1,0 +1,16 @@
+@startuml
+title Servicios y Dependencias — Diagrama de Componentes
+
+skinparam componentStyle rectangle
+
+package "Mi Aplicación" {
+  component "Servicio de Usuarios" as user
+  interface UserService
+  component "Servicio de Catálogo" as catalog
+  component "Servicio de Préstamo" as prestamo
+  component "Servicio de Notificaciones" as notif
+}
+
+user - UserService : <<provee>>
+prestamo - UserService : <<requiere>>
+@enduml

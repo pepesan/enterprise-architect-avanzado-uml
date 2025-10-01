@@ -1,0 +1,30 @@
+@startuml
+title Gestión de Productos — Acceso a BBDD (Diagrama de Componentes)
+
+skinparam shadowing false
+skinparam componentStyle rectangle
+
+package "Mi Aplicación" {
+  component "Servicio de Productos" as svc
+
+  package "Persistencia" {
+    component "Adaptador de Persistencia" as adapter
+    interface ProductoRepository
+  }
+}
+
+package "Base de Datos" {
+  database "BBDD Productos" as db
+}
+
+
+
+' La capa de persistencia ofrece la interfaz de acceso a productos
+adapter - ProductoRepository : <<provee>>
+' El adaptador usa la BBDD
+adapter --> db : consultas/CRUD
+
+' El servicio de aplicación requiere la interfaz del repositorio
+svc - ProductoRepository : <<requiere>>
+
+@enduml

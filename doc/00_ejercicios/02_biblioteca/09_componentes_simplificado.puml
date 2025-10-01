@@ -1,0 +1,42 @@
+@startuml
+title Mi Aplicación — Componentes y Servicios (proveídos y requeridos)
+
+skinparam shadowing false
+skinparam componentStyle rectangle
+
+package "Mi Aplicación" {
+
+  ' ================== Componentes ==================
+  component "API Pública" as api
+
+  component "Servicio de Usuarios" as user
+  component "Servicio de Catálogo" as catalog
+  component "Servicio de Préstamo" as loan
+  component "Servicio de Notificaciones" as notif
+
+  ' ================== Interfaces (Proveídas) ==================
+  ' Usuarios
+  interface UserService
+
+
+
+
+  ' ================== Provisión de interfaces ==================
+  user - UserService : <<provee>>
+
+
+
+
+  ' ================== Dependencias (Requeridas) ==================
+  ' La API pública orquesta casos de uso de toda la app
+  api - UserService        : <<requiere>>
+
+
+  ' El servicio de Préstamo necesita datos de usuario y catálogo y notifica eventos
+  loan - UserService         : <<requiere>>
+
+
+
+}
+
+@enduml
