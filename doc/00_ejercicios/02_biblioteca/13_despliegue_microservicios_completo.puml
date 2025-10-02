@@ -1,0 +1,194 @@
+@startuml
+title Despliegue — Biblioteca en Línea (Microservicios)
+
+skinparam shadowing false
+skinparam defaultFontName Monospace
+skinparam packageStyle rectangle
+skinparam wrapWidth 200
+skinparam maxMessageSize 200
+
+' ====== Estereotipos / Estilos ======
+skinparam component {
+  BackgroundColor<<gateway>> LightBlue
+  BorderColor<<gateway>> Blue
+
+  BackgroundColor<<microservice>> LightYellow
+  BorderColor<<microservice>> Orange
+
+  BackgroundColor<<auth>> Lavender
+  BorderColor<<auth>> Purple
+
+  BackgroundColor<<mesh>> HoneyDew
+  BorderColor<<mesh>> DarkGreen
+
+  BackgroundColor<<infra>> GhostWhite
+  BorderColor<<infra>> Gray
+
+  BackgroundColor<<obs>> Wheat
+  BorderColor<<obs>> Sienna
+
+  BackgroundColor<<external>> Gainsboro
+  BorderColor<<external>> Black
+
+  BackgroundColor<<cache>> MintCream
+  BorderColor<<cache>> DarkSeaGreen
+
+  BackgroundColor<<queue>> AliceBlue
+  BorderColor<<queue>> SteelBlue
+
+  BackgroundColor<<storage>> Seashell
+  BorderColor<<storage>> Peru
+}
+
+' ====== Clientes ======
+node "Clientes" {
+  [Web SPA] <<external>>
+  [App Móvil] <<external>>
+  [Backoffice Admin] <<external>>
+}
+
+' ====== Cloud / K8s ======
+node "Cloud / Kubernetes Cluster" {
+  node "Namespace: biblioteca-prod" <<infra>> {
+
+    component "Ingress Controller (Nginx/ALB)" as Ingress <<gateway>>
+
+    component "API Gateway\n(rate-limit, routing, TLS, JWT)" as APIGW <<gateway>>
+
+    component "Service Mesh (Envoy/Istio)\nsidecars mTLS, retries, circuit-breakers" as Mesh <<mesh>>
+
+    component "Auth Server (OIDC)\n(ej. Keycloak)" as OIDC <<auth>>
+
+    package "Microservicios" {
+      component "Usuarios Service\n(REST/gRPC)" as SUsuarios <<microservice>>
+      component "Catalogo Service\n(Libro, Ejemplar)" as SCatalogo <<microservice>>
+      component "Prestamos Service\n(Préstamo)" as SPrestamos <<microservice>>
+      component "Notificaciones Service\n(email, SMS, push)" as SNotifs <<microservice>>
+    }
+
+    package "Persistencia & Mensajería" <<infra>> {
+      database "UsuariosDB\n(PostgreSQL)" as DBUsuarios
+      database "CatalogoDB\n(PostgreSQL)" as DBCatalogo
+      database "PrestamosDB\n(PostgreSQL)" as DBPrestamos
+      database "NotifsDB\n(PostgreSQL)" as DBNotifs
+
+      component "Broker de Mensajes\n(Kafka/RabbitMQ)" as Broker <<queue>>
+      component "Redis Cache" as Redis <<cache>>
+      component "Object Storage\n(S3/MinIO)" as ObjStore <<storage>>
+    }
+
+    package "Observabilidad" {
+      component "Prometheus\n(Metrics)" as Prom <<obs>>
+      component "Grafana\n(Dashboards)" as Graf <<obs>>
+      component "Loki / ELK\n(Logs)" as Logs <<obs>>
+      component "Jaeger / Tempo\n(Tracing)" as Trace <<obs>>
+    }
+  }
+}
+
+' ====== Proveedores externos ======
+package "Proveedores Externos" {
+  component "SMTP/Email Gateway" as SMTP <<external>>
+  component "SMS Gateway" as SMS <<external>>
+  component "Push Provider" as PUSH <<external>>
+}
+
+' ====== Artefactos (contenedores) y réplicas ======
+artifact "usuarios:latest\nreplicas=3" as AUsuarios
+artifact "catalogo:latest\nreplicas=3" as ACatalogo
+artifact "prestamos:latest\nreplicas=3" as APrestamos
+artifact "notifs:latest\nreplicas=2" as ANotifs
+artifact "api-gw:latest\nreplicas=2" as AApiGw
+
+AUsuarios -[hidden]-> SUsuarios
+ACatalogo -[hidden]-> SCatalogo
+APrestamos -[hidden]-> SPrestamos
+ANotifs -[hidden]-> SNotifs
+AApiGw -[hidden]-> APIGW
+
+note right of SUsuarios
+  Endpoints típicos:
+  - POST /usuarios
+  - GET /usuarios/{id|email}
+  - PATCH /usuarios/{id}/activar
+end note
+
+note right of SPrestamos
+  Publica eventos:
+  - prestamo.creado
+  - prestamo.vencido
+  - prestamo.devuelto
+end note
+
+' ====== Flujo de tráfico ======
+[Web SPA] --> Ingress : HTTPS
+[App Móvil] --> Ingress : HTTPS
+[Backoffice Admin] --> Ingress : HTTPS
+
+Ingress --> APIGW : TLS passthrough / HTTPs
+APIGW --> OIDC : OIDC discovery / JWKS
+APIGW --> SUsuarios : REST (JWT)
+APIGW --> SCatalogo : REST (JWT)
+APIGW --> SPrestamos : REST (JWT)
+APIGW --> SNotifs : REST (JWT)
+
+' ====== Llamadas internas (mesh) ======
+SPrestamos --> SCatalogo : gRPC/REST (detalle de ejemplar)
+SPrestamos --> SUsuarios : gRPC/REST (titular del préstamo)
+SNotifs --> SPrestamos : REST (consulta estado)
+SNotifs --> SUsuarios : REST (correo destinatario)
+
+' ====== Bases de datos por servicio ======
+SUsuarios --> DBUsuarios : JDBC/PG
+SCatalogo --> DBCatalogo : JDBC/PG
+SPrestamos --> DBPrestamos : JDBC/PG
+SNotifs --> DBNotifs : JDBC/PG
+
+' ====== Cache / Storage ======
+SCatalogo --> Redis : cache de catálogos
+SUsuarios --> Redis : sesiones/ratelimit (opcional)
+SPrestamos --> ObjStore : adjuntos (opcional)
+
+' ====== Mensajería ======
+SPrestamos --> Broker : publica eventos
+SNotifs --> Broker : consume eventos
+SUsuarios --> Broker : publica/consume (opcional)
+SCatalogo --> Broker : consume (rebuild proyecciones)
+
+' ====== Notificaciones salientes ======
+SNotifs --> SMTP : email
+SNotifs --> SMS : sms
+SNotifs --> PUSH : push
+
+' ====== Observabilidad ======
+SUsuarios --> Prom : métricas
+SCatalogo --> Prom : métricas
+SPrestamos --> Prom : métricas
+SNotifs --> Prom : métricas
+APIGW --> Prom : métricas
+
+SUsuarios --> Logs : logs
+SCatalogo --> Logs : logs
+SPrestamos --> Logs : logs
+SNotifs --> Logs : logs
+APIGW --> Logs : logs
+Ingress --> Logs : logs
+
+SUsuarios --> Trace : spans
+SCatalogo --> Trace : spans
+SPrestamos --> Trace : spans
+SNotifs --> Trace : spans
+APIGW --> Trace : spans
+
+' ====== Seguridad de servicio a servicio ======
+Mesh -[dashed]-> SUsuarios : sidecar mTLS
+Mesh -[dashed]-> SCatalogo : sidecar mTLS
+Mesh -[dashed]-> SPrestamos : sidecar mTLS
+Mesh -[dashed]-> SNotifs : sidecar mTLS
+
+' ====== Autenticación ======
+[Web SPA] --> OIDC : PKCE/OAuth2
+[App Móvil] --> OIDC : OAuth2
+APIGW --> OIDC : validación JWT (JWKS)
+
+@enduml

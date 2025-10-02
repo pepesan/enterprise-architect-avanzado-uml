@@ -1,0 +1,125 @@
+@startuml
+title Despliegue — Biblioteca en Línea (Microservicios en Servidores)
+
+skinparam shadowing false
+skinparam defaultFontName Monospace
+skinparam packageStyle rectangle
+skinparam wrapWidth 200
+
+' ===== Estilos sencillos por tipo =====
+skinparam node {
+  BackgroundColor LightGray
+  BorderColor Black
+}
+skinparam component {
+  BackgroundColor White
+  BorderColor Gray
+}
+skinparam database {
+  BackgroundColor White
+  BorderColor Black
+}
+
+' ===== Clientes =====
+node "Clientes" {
+  [Web SPA]
+  [App Móvil]
+  [Backoffice Admin]
+}
+
+' ===== Capa pública =====
+node "Servidor Edge (Reverse Proxy / LB)" as EDGE {
+  [Nginx/HAProxy] as LB
+}
+
+node "API Gateway" as APIGW {
+  [API Gateway\n(TLS, routing, rate-limit, JWT)]
+}
+
+node "Auth Server (OIDC)" as OIDC
+
+' ===== Microservicios (1 servidor por microservicio) =====
+node "Srv-Usuarios" as SRV_USERS {
+  component "Usuarios Service" as SUsuarios
+}
+database "UsuariosDB\n(PostgreSQL)" as DBUsuarios
+
+node "Srv-Catalogo" as SRV_CAT {
+  component "Catalogo Service" as SCatalogo
+}
+database "CatalogoDB\n(PostgreSQL)" as DBCatalogo
+
+node "Srv-Prestamos" as SRV_PRE {
+  component "Prestamos Service" as SPrestamos
+}
+database "PrestamosDB\n(PostgreSQL)" as DBPrestamos
+
+node "Srv-Notificaciones" as SRV_NOTIF {
+  component "Notificaciones Service" as SNotifs
+}
+database "NotifsDB\n(PostgreSQL)" as DBNotifs
+
+' ===== Infra compartida =====
+node "Srv-Cache" as SRV_CACHE {
+  component "Redis Cache" as Redis
+}
+node "Srv-Mensajeria" as SRV_BROKER {
+  component "Broker de Mensajes\n(Kafka/RabbitMQ)" as Broker
+}
+node "Srv-Storage" as SRV_OBJ {
+  component "Object Storage\n(S3/MinIO)" as ObjStore
+}
+
+' ===== Proveedores externos =====
+node "Proveedores Externos" {
+  [SMTP/Email Gateway] as SMTP
+  [SMS Gateway] as SMS
+  [Push Provider] as PUSH
+}
+
+' ===== Flujo externo =====
+[Web SPA] --> LB : HTTPS
+[App Móvil] --> LB : HTTPS
+[Backoffice Admin] --> LB : HTTPS
+LB --> APIGW : HTTPS
+APIGW --> OIDC : OIDC discovery / JWKS
+
+' ===== Rutas hacia microservicios =====
+APIGW --> SUsuarios : REST (JWT)
+APIGW --> SCatalogo : REST (JWT)
+APIGW --> SPrestamos : REST (JWT)
+APIGW --> SNotifs : REST (JWT)
+
+' ===== Llamadas internas mínimas =====
+SPrestamos --> SCatalogo : REST/gRPC
+SPrestamos --> SUsuarios : REST/gRPC
+SNotifs --> SPrestamos : REST
+SNotifs --> SUsuarios : REST
+
+' ===== Persistencia por servicio =====
+SUsuarios --> DBUsuarios : TCP 5432
+SCatalogo --> DBCatalogo : TCP 5432
+SPrestamos --> DBPrestamos : TCP 5432
+SNotifs --> DBNotifs : TCP 5432
+
+' ===== Cache / Storage (opcionales) =====
+SCatalogo --> Redis : cache catálogos
+SUsuarios --> Redis : sesiones/ratelimit (opcional)
+SPrestamos --> ObjStore : adjuntos (opcional)
+
+' ===== Mensajería de eventos =====
+SPrestamos --> Broker : publica eventos
+SNotifs --> Broker : consume eventos
+SUsuarios --> Broker : publica/consume (opcional)
+SCatalogo --> Broker : consume (proyecciones)
+
+' ===== Notificaciones salientes =====
+SNotifs --> SMTP : email
+SNotifs --> SMS : sms
+SNotifs --> PUSH : push
+
+' ===== Autenticación de clientes =====
+[Web SPA] --> OIDC : PKCE/OAuth2
+[App Móvil] --> OIDC : OAuth2
+APIGW --> OIDC : validación JWT
+@enduml

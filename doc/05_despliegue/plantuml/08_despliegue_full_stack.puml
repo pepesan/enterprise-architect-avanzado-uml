@@ -1,0 +1,33 @@
+@startuml
+title Despliegue simple: Frontend + Backend + BBDD
+
+skinparam shadowing false
+skinparam node {
+  BackgroundColor LightGray
+  BorderColor Black
+}
+skinparam database {
+  BackgroundColor White
+  BorderColor Black
+}
+skinparam artifact {
+  BackgroundColor White
+  BorderColor Gray
+}
+
+actor "Usuario" as User
+
+node "Servidor Web (Frontend)" as FE {
+  artifact "frontend (HTML/CSS/JS)\nNginx/Apache" as Front
+}
+
+node "Servidor App (Backend)" as BE {
+  artifact "backend (REST)\nNode/Java/Python" as Back
+}
+
+database "Servidor BBDD\n(PostgreSQL/MySQL)" as DB
+
+User --> FE : HTTPS
+FE --> BE : HTTP/HTTPS (API)
+BE --> DB : TCP 5432/3306 (SQL)
+@enduml
