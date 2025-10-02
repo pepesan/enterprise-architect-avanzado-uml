@@ -1,0 +1,154 @@
+@startuml
+title Módulo Usuarios — Diagrama de Clases con Estereotipos
+
+skinparam shadowing false
+skinparam classAttributeIconSize 0
+
+' ---- Estilos por estereotipo ----
+skinparam class {
+  BackgroundColor<<Controller>> LightBlue
+  BorderColor<<Controller>> Blue
+
+  BackgroundColor<<Service>> LightYellow
+  BorderColor<<Service>> Orange
+
+  BackgroundColor<<Repository>> LightGreen
+  BorderColor<<Repository>> DarkGreen
+
+  BackgroundColor<<Entity>> White
+  BorderColor<<Entity>> Black
+
+  BackgroundColor<<DTO>> Wheat
+  BorderColor<<DTO>> Sienna
+
+  BackgroundColor<<Mapper>> Lavender
+  BorderColor<<Mapper>> Purple
+
+  BackgroundColor<<Validator>> HoneyDew
+  BorderColor<<Validator>> DarkOliveGreen
+
+  BackgroundColor<<External>> GhostWhite
+  BorderColor<<External>> Gray
+}
+
+' ---- Perfil emulado (opcional) ----
+package "Perfil" <<profile>> {
+  class «Controller» <<stereotype>>
+  class «Service» <<stereotype>>
+  class «Repository» <<stereotype>>
+  class «Entity» <<stereotype>>
+  class «DTO» <<stereotype>>
+  class «Mapper» <<stereotype>>
+  class «Validator» <<stereotype>>
+  class «External» <<stereotype>>
+}
+
+' ==================== MODELO USUARIOS ====================
+package "Usuarios" {
+  ' ---- Entity según la tabla Usuario ----
+  class UsuarioEntity <<Entity>> {
+    +id: UUID
+    +email: String
+    +nombre: String
+    +fechaAlta: Date
+    +activo: Boolean
+  }
+
+  note right of UsuarioEntity
+    Mapea a tabla: Usuario
+    Claves y reglas:
+    - PK: id
+    - UK: email
+    - activo: {true|false}
+  end note
+
+  ' ---- DTO expuesto por la API/capa de servicio ----
+  class UsuarioDTO <<DTO>> {
+    +id: UUID
+    +email: String
+    +nombre: String
+    +fechaAlta: Date
+    +activo: Boolean
+  }
+
+  ' ---- Interfaces (contratos) ----
+  interface IUsuarioService <<Service>> {
+    +crearUsuario(dto: UsuarioDTO): UsuarioDTO
+    +activarUsuario(id: UUID): void
+    +desactivarUsuario(id: UUID): void
+    +buscarPorEmail(email: String): UsuarioDTO?
+    +listarActivos(): List<UsuarioDTO>
+  }
+
+  interface IUsuarioRepository <<Repository>> {
+    +save(entity: UsuarioEntity): UsuarioEntity
+    +findById(id: UUID): UsuarioEntity?
+    +findByEmail(email: String): UsuarioEntity?
+    +findActivos(): List<UsuarioEntity>
+    +existsByEmail(email: String): Boolean
+  }
+
+  ' ---- Implementaciones ----
+  class UsuarioService <<Service>> {
+    -repo: IUsuarioRepository
+    -validator: UsuarioValidator
+    -mapper: UsuarioMapper
+    +crearUsuario(dto: UsuarioDTO): UsuarioDTO
+    +activarUsuario(id: UUID): void
+    +desactivarUsuario(id: UUID): void
+    +buscarPorEmail(email: String): UsuarioDTO?
+    +listarActivos(): List<UsuarioDTO>
+  }
+
+  class UsuarioRepository <<Repository>> {
+    -dataSource: DataSource
+    +save(entity: UsuarioEntity): UsuarioEntity
+    +findById(id: UUID): UsuarioEntity?
+    +findByEmail(email: String): UsuarioEntity?
+    +findActivos(): List<UsuarioEntity>
+    +existsByEmail(email: String): Boolean
+  }
+
+  class UsuarioController <<Controller>> {
+    -service: IUsuarioService
+    +postCrear(dto: UsuarioDTO): UsuarioDTO
+    +postActivar(id: UUID): void
+    +postDesactivar(id: UUID): void
+    +getPorEmail(email: String): UsuarioDTO?
+    +getActivos(): List<UsuarioDTO>
+  }
+
+  class UsuarioMapper <<Mapper>> {
+    +toEntity(dto: UsuarioDTO): UsuarioEntity
+    +toDTO(entity: UsuarioEntity): UsuarioDTO
+    +toDTOList(entities: List<UsuarioEntity>): List<UsuarioDTO>
+  }
+
+  class UsuarioValidator <<Validator>> {
+    +validarNuevo(dto: UsuarioDTO): void
+    +validarEmail(email: String): void
+  }
+
+  class DataSource <<External>> {
+    +getConnection(): Connection
+  }
+
+  ' ---- Relaciones entre capas ----
+  UsuarioController --> IUsuarioService : usa
+  UsuarioService ..|> IUsuarioService
+  UsuarioService --> IUsuarioRepository : usa
+  UsuarioRepository ..|> IUsuarioRepository
+
+  UsuarioService --> UsuarioValidator : valida
+  UsuarioService --> UsuarioMapper : mapea
+
+  UsuarioRepository --> DataSource : consulta
+  UsuarioRepository --> UsuarioEntity : persiste
+
+  UsuarioMapper --> UsuarioEntity
+  UsuarioMapper --> UsuarioDTO
+}
+' ---- Relación entre paquetes ----
+"Usuarios" ..> "Perfil" : <<apply>>
+
+@enduml
