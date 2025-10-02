@@ -140,13 +140,13 @@ package "Usuarios" {
   UsuarioRepository ..|> IUsuarioRepository
 
   UsuarioService --> UsuarioValidator : valida
-  UsuarioService --> UsuarioMapper : mapea
+  UsuarioService --> UsuarioMapper : usa
 
   UsuarioRepository --> DataSource : consulta
   UsuarioRepository --> UsuarioEntity : persiste
 
-  UsuarioMapper --> UsuarioEntity
-  UsuarioMapper --> UsuarioDTO
+  UsuarioMapper <--> UsuarioEntity: toEntity
+  UsuarioMapper <--> UsuarioDTO: toDTO
 }
 ' ==================== BASE DE DATOS ====================
 package "Base de Datos" {
