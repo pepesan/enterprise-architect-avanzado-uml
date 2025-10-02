@@ -145,8 +145,8 @@ package "Usuarios" {
   UsuarioRepository --> DataSource : consulta
   UsuarioRepository --> UsuarioEntity : persiste
 
-  UsuarioMapper <--> UsuarioEntity: toEntity
-  UsuarioMapper <--> UsuarioDTO: toDTO
+  UsuarioMapper --> UsuarioEntity: toEntity
+  UsuarioMapper --> UsuarioDTO: toDTO
 }
 ' ==================== BASE DE DATOS ====================
 package "Base de Datos" {
