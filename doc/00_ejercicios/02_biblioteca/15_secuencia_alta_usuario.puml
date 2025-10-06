@@ -1,0 +1,36 @@
+@startuml
+!theme plain
+skinparam sequenceMessageAlign center
+skinparam responseMessageBelowArrow true
+
+actor Usuario as user
+participant "Cliente Web/App" as client
+participant "API Gateway" as gateway
+participant "Microservicio\nUsuarios" as msUsuarios
+database "BD Usuarios" as dbUsuarios
+
+== Alta de Usuario ==
+user -> client: Completa formulario de registro
+client -> gateway: POST /api/auth/register\n{nombre, email, password}
+gateway -> msUsuarios: POST /auth/register\n{nombre, email, password}
+
+msUsuarios -> dbUsuarios: Verificar si el email ya existe
+dbUsuarios --> msUsuarios: Email no encontrado
+
+alt Email no registrado
+    msUsuarios -> msUsuarios: Hashear contraseña (bcrypt)
+    msUsuarios -> dbUsuarios: Insertar nuevo usuario\n{nombre, email, hashPassword, fechaAlta}
+    dbUsuarios --> msUsuarios: Usuario creado correctamente
+
+    msUsuarios -> msUsuarios: Generar JWT inicial
+    msUsuarios --> gateway: 201 Created\n{token, userId, expiresIn}
+    gateway --> client: 201 Created\n{token, userId, expiresIn}
+    client -> client: Guardar token en memoria
+    client --> user: Registro exitoso y sesión iniciada
+else Email ya registrado
+    msUsuarios --> gateway: 409 Conflict\n{error: "Email ya registrado"}
+    gateway --> client: 409 Conflict\n{error: "Email ya registrado"}
+    client --> user: El email ya está en uso
+end
+
+@enduml

@@ -1,0 +1,53 @@
+@startuml
+!theme plain
+skinparam sequenceMessageAlign center
+skinparam responseMessageBelowArrow true
+
+actor "Bibliotecario" as user
+participant "Cliente Web/App" as client
+participant "API Gateway" as gateway
+participant "Microservicio\nCatálogo" as msCatalogo
+database "BD Catálogo" as dbCatalogo
+participant "Servicio de Archivos\n(Portadas/Objetos)" as storage
+
+== Alta de Libro ==
+user -> client: Completa formulario de alta\n{titulo, autor, isbn, año, ...}
+client -> gateway: POST /api/catalogo/libros\nBody: {datosLibro}\nHeader: Authorization: Bearer <JWT>
+gateway -> msCatalogo: POST /catalogo/libros\nBody: {datosLibro}\nPropaga: userId/claims
+
+msCatalogo -> msCatalogo: Validar formato y firma JWT
+msCatalogo -> msCatalogo: Verificar expiración y claims (role=bibliotecario o scope=catalog:write)
+
+alt JWT inválido/expirado o sin permisos
+  msCatalogo --> gateway: 401/403 {error}
+  gateway --> client: 401/403 {error}
+  client --> user: No autorizado
+  return
+end
+
+msCatalogo -> msCatalogo: Validar datos de entrada (schema)
+alt Datos inválidos
+  msCatalogo --> gateway: 400 Bad Request {erroresValidacion}
+  gateway --> client: 400 Bad Request {erroresValidacion}
+  client --> user: Corrige los campos
+  return
+end
+
+msCatalogo -> dbCatalogo: Buscar por ISBN
+dbCatalogo --> msCatalogo: {existe: true/false}
+
+alt ISBN ya existe
+  msCatalogo --> gateway: 409 Conflict {error: "ISBN ya registrado"}
+  gateway --> client: 409 Conflict {error: "ISBN ya registrado"}
+  client --> user: El ISBN ya está registrado
+else ISBN no existe
+
+  msCatalogo -> dbCatalogo: Insertar libro\n{titulo, autor, isbn, año, ... , urlPortada?}
+  dbCatalogo --> msCatalogo: Insert OK {libroId}
+
+  msCatalogo --> gateway: 201 Created\n{libroId, isbn, titulo, urlPortada?, ejemplaresCreados?}
+  gateway --> client: 201 Created\n{libroId, isbn, titulo, urlPortada?, ejemplaresCreados?}
+  client --> user: Libro dado de alta correctamente
+end
+
+@enduml
