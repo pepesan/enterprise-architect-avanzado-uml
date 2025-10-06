@@ -1,0 +1,122 @@
+@startuml
+!theme plain
+skinparam activity {
+  ArrowColor Black
+  BackgroundColor White
+  DiamondBackgroundColor LightGray
+  DiamondBorderColor Black
+  BarColor Black
+}
+
+' =========================
+' Autenticación
+' =========================
+|Usuario|
+start
+:Introduce credenciales;
+
+|Cliente Web/App|
+:Enviar POST /api/auth/login\n{username, password};
+
+|API Gateway|
+:Reenviar POST /auth/login\n{username, password};
+
+|Microservicio Usuarios|
+:Verificar credenciales en BD Usuarios;
+
+|BD Usuarios|
+:Buscar usuario y validar credenciales;
+:Retornar "Usuario válido";
+
+|Microservicio Usuarios|
+:Generar JWT token;
+:Retornar 200 OK\n{token, userId, expiresIn};
+
+|API Gateway|
+:Reenviar 200 OK al cliente;
+
+|Cliente Web/App|
+:Almacenar token en memoria;
+
+|Usuario|
+:Login exitoso;
+
+' =========================
+' Solicitud de Préstamo
+' =========================
+|Usuario|
+:Solicita préstamo de ejemplar;
+
+|Cliente Web/App|
+:Enviar POST /api/prestamos\n{ejemplarId}\nAuthorization: Bearer <JWT>;
+
+|API Gateway|
+:Reenviar POST /prestamos/solicitar\n{userId, ejemplarId};
+
+|Microservicio Préstamos|
+:Validar formato, firma y expiración JWT;
+
+|Microservicio Catálogo|
+:GET /ejemplares/{ejemplarId};
+
+|BD Catálogo|
+:Consultar disponibilidad;
+:Retornar "Ejemplar encontrado";
+
+|Microservicio Catálogo|
+:Retornar 200 OK\n{ejemplarId, disponible: true/false, titulo};
+
+|Microservicio Préstamos|
+if (¿Ejemplar disponible?) then (Sí)
+  :Verificar límite de préstamos del usuario;
+
+  |BD Préstamos|
+  :Consultar préstamos activos del usuario;
+  :Retornar "Dentro del límite"/"Excede límite";
+
+  |Microservicio Préstamos|
+  if (¿Dentro del límite?) then (Sí)
+    |BD Préstamos|
+    :Crear registro de préstamo;
+    :Retornar "Préstamo creado";
+
+    |Microservicio Préstamos|
+    |Microservicio Catálogo|
+    :PATCH /ejemplares/{ejemplarId}\n{disponible: false};
+
+    |BD Catálogo|
+    :Actualizar disponibilidad;
+    :Retornar "Actualizado";
+
+    |Microservicio Catálogo|
+    :Retornar 200 OK;
+
+    |Microservicio Préstamos|
+    :Retornar 201 Created\n{prestamoId, fechaPrestamo, fechaDevolucion};
+
+    |API Gateway|
+    :Reenviar 201 Created al cliente;
+
+    |Cliente Web/App|
+    :Mostrar "Préstamo realizado exitosamente";
+  else (No)
+    :Retornar 400 Bad Request\n{error: "Límite de préstamos alcanzado"};
+
+    |API Gateway|
+    :Reenviar 400 Bad Request al cliente;
+
+    |Cliente Web/App|
+    :Mostrar "Has alcanzado el límite de préstamos";
+  endif
+else (No)
+  :Retornar 409 Conflict\n{error: "Ejemplar no disponible"};
+
+  |API Gateway|
+  :Reenviar 409 Conflict al cliente;
+
+  |Cliente Web/App|
+  :Mostrar "El libro no está disponible";
+endif
+
+stop
+@enduml
