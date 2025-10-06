@@ -1,0 +1,82 @@
+@startuml
+!theme plain
+skinparam activity {
+  ArrowColor Black
+  BackgroundColor White
+  DiamondBackgroundColor LightGray
+  DiamondBorderColor Black
+  BarColor Black
+}
+
+|Bibliotecario|
+start
+:Completa formulario de alta\n{título, autor, isbn, año, ...};
+
+|Cliente Web/App|
+:Enviar POST /api/catalogo/libros\nBody: {datosLibro}\nHeader: Authorization: Bearer <JWT>;
+
+|API Gateway|
+:Reenviar POST /catalogo/libros\nBody: {datosLibro}\nPropaga userId/claims;
+
+|Microservicio Catálogo|
+:Validar formato y firma JWT;
+:Verificar expiración y claims\n(role=bibliotecario o scope=catalog:write);
+
+if (¿JWT válido y con permisos?) then (Sí)
+  :Validar datos de entrada (schema);
+
+  if (¿Datos válidos?) then (Sí)
+    :Buscar por ISBN en BD Catálogo;
+
+    |BD Catálogo|
+    :Consultar ISBN;
+    :Retornar {existe: true/false};
+
+    |Microservicio Catálogo|
+    if (¿ISBN ya existe?) then (Sí)
+      :Retornar 409 Conflict\n{error: "ISBN ya registrado"};
+
+      |API Gateway|
+      :Reenviar 409 Conflict al cliente;
+
+      |Cliente Web/App|
+      :Mostrar "El ISBN ya está registrado";
+
+    else (No)
+      :Insertar libro en BD\n{título, autor, isbn, año, ..., urlPortada?};
+
+      |BD Catálogo|
+      :Insert OK {libroId};
+
+      |Microservicio Catálogo|
+      :Retornar 201 Created\n{libroId, isbn, título, urlPortada?, ejemplaresCreados?};
+
+      |API Gateway|
+      :Reenviar 201 Created al cliente;
+
+      |Cliente Web/App|
+      :Mostrar "Libro dado de alta correctamente";
+    endif
+
+  else (No)
+    :Retornar 400 Bad Request\n{erroresValidacion};
+
+    |API Gateway|
+    :Reenviar 400 Bad Request al cliente;
+
+    |Cliente Web/App|
+    :Mostrar "Corrige los campos";
+  endif
+
+else (No)
+  :Retornar 401/403 {error};
+
+  |API Gateway|
+  :Reenviar 401/403 al cliente;
+
+  |Cliente Web/App|
+  :Mostrar "No autorizado";
+endif
+
+stop
+@enduml

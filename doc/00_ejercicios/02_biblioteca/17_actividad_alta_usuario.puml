@@ -1,0 +1,54 @@
+@startuml
+!theme plain
+skinparam activity {
+  ArrowColor Black
+  BackgroundColor White
+  DiamondBackgroundColor LightGray
+  DiamondBorderColor Black
+  BarColor Black
+}
+
+|Usuario|
+start
+:Completa formulario de registro;
+
+|Cliente Web/App|
+:Enviar POST /api/auth/register\n{nombre, email, password};
+
+|API Gateway|
+:Reenviar POST /auth/register\n{nombre, email, password};
+
+|Microservicio Usuarios|
+:Verificar si el email existe en BD Usuarios;
+
+|BD Usuarios|
+:Buscar email;
+
+|Microservicio Usuarios|
+if (¿Email existe?) then (No)
+  :Hashear contraseña (bcrypt);
+  |BD Usuarios|
+  :Insertar nuevo usuario\n{nombre, email, hashPassword, fechaAlta};
+  :Confirmar creación;
+  |Microservicio Usuarios|
+  :Generar JWT inicial;
+  :Retornar 201 Created\n{token, userId, expiresIn};
+
+  |API Gateway|
+  :Retornar 201 Created al cliente;
+
+  |Cliente Web/App|
+  :Guardar token en memoria;
+  |Usuario|
+  :Mostrar "Registro exitoso y sesión iniciada";
+else (Sí)
+  :Retornar 409 Conflict\n{error: "Email ya registrado"};
+  |API Gateway|
+  :Retornar 409 Conflict al cliente;
+
+  |Cliente Web/App|
+  :Mostrar "El email ya está en uso";
+endif
+
+stop
+@enduml
