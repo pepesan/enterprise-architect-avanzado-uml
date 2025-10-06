@@ -1,0 +1,68 @@
+
+@startuml
+!theme plain
+skinparam sequenceMessageAlign center
+skinparam responseMessageBelowArrow true
+
+actor Usuario as user
+participant "Cliente Web/App" as client
+participant "API Gateway" as gateway
+participant "Microservicio\nUsuarios" as msUsuarios
+participant "Microservicio\nPréstamos" as msPrestamos
+participant "Microservicio\nCatálogo" as msCatalogo
+database "BD Usuarios" as dbUsuarios
+database "BD Préstamos" as dbPrestamos
+database "BD Catálogo" as dbCatalogo
+
+== Autenticación ==
+user -> client: Introduce credenciales
+client -> gateway: POST /api/auth/login\n{username, password}
+gateway -> msUsuarios: POST /auth/login\n{username, password}
+msUsuarios -> dbUsuarios: Verificar credenciales
+dbUsuarios --> msUsuarios: Usuario válido
+msUsuarios -> msUsuarios: Generar JWT token
+msUsuarios --> gateway: 200 OK\n{token, userId, expiresIn}
+gateway --> client: 200 OK\n{token, userId, expiresIn}
+client -> client: Almacenar token en memoria
+client --> user: Login exitoso
+
+== Solicitud de Préstamo ==
+user -> client: Solicita préstamo de ejemplar
+client -> gateway: POST /api/prestamos\n{ejemplarId}\nHeader: Authorization: Bearer <JWT>
+gateway -> msPrestamos: POST /prestamos/solicitar\n{userId, ejemplarId}
+msPrestamos -> msPrestamos: Validar formato JWT
+msPrestamos -> msPrestamos: Verificar firma y expiración JWT
+msPrestamos -> msCatalogo: GET /ejemplares/{ejemplarId}
+msCatalogo -> dbCatalogo: Consultar disponibilidad
+dbCatalogo --> msCatalogo: Ejemplar encontrado
+msCatalogo --> msPrestamos: 200 OK\n{ejemplarId, disponible: true, titulo}
+
+alt Ejemplar disponible
+    msPrestamos -> dbPrestamos: Verificar límite de préstamos usuario
+    dbPrestamos --> msPrestamos: Usuario dentro del límite
+
+    msPrestamos -> dbPrestamos: Crear registro préstamo
+    dbPrestamos --> msPrestamos: Préstamo creado
+
+    msPrestamos -> msCatalogo: PATCH /ejemplares/{ejemplarId}\n{disponible: false}
+    msCatalogo -> dbCatalogo: Actualizar disponibilidad
+    dbCatalogo --> msCatalogo: Actualizado
+    msCatalogo --> msPrestamos: 200 OK
+
+    msPrestamos --> gateway: 201 Created\n{prestamoId, fechaPrestamo, fechaDevolucion}
+    gateway --> client: 201 Created\n{prestamoId, fechaPrestamo, fechaDevolucion}
+    client --> user: Préstamo realizado exitosamente
+
+else Ejemplar no disponible
+    msPrestamos --> gateway: 409 Conflict\n{error: "Ejemplar no disponible"}
+    gateway --> client: 409 Conflict\n{error: "Ejemplar no disponible"}
+    client --> user: El libro no está disponible
+
+else Usuario excede límite
+    msPrestamos --> gateway: 400 Bad Request\n{error: "Límite de préstamos alcanzado"}
+    gateway --> client: 400 Bad Request\n{error: "Límite de préstamos alcanzado"}
+    client --> user: Has alcanzado el límite de préstamos
+
+end
+
+@enduml
