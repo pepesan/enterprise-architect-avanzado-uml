@@ -19,18 +19,26 @@ start
 :Enviar POST /api/auth/login\n{username, password};
 
 |API Gateway|
-:Reenviar POST /auth/login\n{username, password};
+:Reenviar POST /api/auth/login\n{username, password};
 
 |Microservicio Usuarios|
 :Verificar credenciales en BD Usuarios;
 
 |BD Usuarios|
 :Buscar usuario y validar credenciales;
-:Retornar "Usuario válido";
-
-|Microservicio Usuarios|
-:Generar JWT token;
-:Retornar 200 OK\n{token, userId, expiresIn};
+if (¿Credenciales válidas?) then (Sí)
+  :Retornar "Usuario válido";
+  |Microservicio Usuarios|
+  :Generar JWT token;
+  :Retornar 200 OK\n{token, userId, expiresIn};
+else (No)
+  :Retornar 401 Unauthorized\n{error: "Credenciales inválidas"};
+  |API Gateway|
+  :Reenviar 401 Unauthorized al cliente;
+  |Cliente Web/App|
+  :Mostrar "Credenciales incorrectas";
+  stop
+endif
 
 |API Gateway|
 :Reenviar 200 OK al cliente;
@@ -48,19 +56,39 @@ start
 :Solicita préstamo de ejemplar;
 
 |Cliente Web/App|
-:Enviar POST /api/prestamos\n{ejemplarId}\nAuthorization: Bearer <JWT>;
+:Enviar POST /api/prestamos/solicitar\n{ejemplarId}\nAuthorization: Bearer <JWT>;
 
 |API Gateway|
-:Reenviar POST /prestamos/solicitar\n{userId, ejemplarId};
+:Validar formato, firma y expiración JWT;
+if (¿JWT válido?) then (Sí)
+  :Reenviar POST /api/prestamos/solicitar\n{userId, ejemplarId};
+else (No)
+  :Retornar 401 Unauthorized\n{error: "Token inválido o expirado"};
+  |Cliente Web/App|
+  :Mostrar "Sesión expirada o token inválido";
+  stop
+endif
 
 |Microservicio Préstamos|
-:Validar formato, firma y expiración JWT;
+:Validar datos de la solicitud;
 
 |Microservicio Catálogo|
-:GET /ejemplares/{ejemplarId};
+:GET /api/ejemplares/{ejemplarId};
 
 |BD Catálogo|
 :Consultar disponibilidad;
+if (¿Error de BD?) then (Sí)
+  :Retornar 500 Internal Server Error\n{error: "Error de base de datos"};
+  |Microservicio Catálogo|
+  :Reenviar 500 Internal Server Error;
+  |Microservicio Préstamos|
+  :Reenviar 500 Internal Server Error;
+  |API Gateway|
+  :Reenviar 500 Internal Server Error al cliente;
+  |Cliente Web/App|
+  :Mostrar "Error interno, intente más tarde";
+  stop
+endif
 :Retornar "Ejemplar encontrado";
 
 |Microservicio Catálogo|
@@ -72,20 +100,52 @@ if (¿Ejemplar disponible?) then (Sí)
 
   |BD Préstamos|
   :Consultar préstamos activos del usuario;
+  if (¿Error de BD?) then (Sí)
+    :Retornar 500 Internal Server Error\n{error: "Error de base de datos"};
+    |Microservicio Préstamos|
+    :Reenviar 500 Internal Server Error;
+    |API Gateway|
+    :Reenviar 500 Internal Server Error al cliente;
+    |Cliente Web/App|
+    :Mostrar "Error interno, intente más tarde";
+    stop
+  endif
   :Retornar "Dentro del límite"/"Excede límite";
 
   |Microservicio Préstamos|
   if (¿Dentro del límite?) then (Sí)
     |BD Préstamos|
     :Crear registro de préstamo;
+    if (¿Error de BD?) then (Sí)
+      :Retornar 500 Internal Server Error\n{error: "Error de base de datos"};
+      |Microservicio Préstamos|
+      :Reenviar 500 Internal Server Error;
+      |API Gateway|
+      :Reenviar 500 Internal Server Error al cliente;
+      |Cliente Web/App|
+      :Mostrar "Error interno, intente más tarde";
+      stop
+    endif
     :Retornar "Préstamo creado";
 
     |Microservicio Préstamos|
     |Microservicio Catálogo|
-    :PATCH /ejemplares/{ejemplarId}\n{disponible: false};
+    :PATCH /api/ejemplares/{ejemplarId}\n{disponible: false};
 
     |BD Catálogo|
     :Actualizar disponibilidad;
+    if (¿Error de concurrencia?) then (Sí)
+      :Retornar 409 Conflict\n{error: "Ejemplar ya no disponible"};
+      |Microservicio Catálogo|
+      :Reenviar 409 Conflict;
+      |Microservicio Préstamos|
+      :Reenviar 409 Conflict;
+      |API Gateway|
+      :Reenviar 409 Conflict al cliente;
+      |Cliente Web/App|
+      :Mostrar "El libro ya fue prestado";
+      stop
+    endif
     :Retornar "Actualizado";
 
     |Microservicio Catálogo|
@@ -117,6 +177,9 @@ else (No)
   |Cliente Web/App|
   :Mostrar "El libro no está disponible";
 endif
+
+' Nota sobre concurrencia
+note right: Para evitar préstamos duplicados,\nla actualización de disponibilidad debe ser atómica.
 
 stop
 @enduml
