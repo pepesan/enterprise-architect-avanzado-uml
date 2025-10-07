@@ -1,0 +1,14 @@
+@startuml
+title Diagrama de Estados – Usuario (Versión Simplificada)
+
+[*] --> NoRegistrado
+
+NoRegistrado --> Registrado : Registrarse
+Registrado --> Activo : Verificación completada
+Activo --> Bloqueado : Bloqueado por el gestor
+Bloqueado --> Activo : Desbloqueado
+Activo --> Eliminado : Eliminar cuenta
+Bloqueado --> Eliminado : Eliminar cuenta
+Eliminado --> [*]
+
+@enduml
