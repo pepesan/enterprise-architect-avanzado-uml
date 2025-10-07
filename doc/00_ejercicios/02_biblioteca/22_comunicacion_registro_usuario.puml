@@ -1,0 +1,32 @@
+@startuml
+title Registro — Comunicación (vertical y mínima)
+
+skinparam layoutDirection top to bottom
+skinparam ArrowColor #547AA5
+skinparam defaultFontName Inter
+
+actor U as "Usuario"
+boundary API as "API Gateway"
+control SVC as "User/Auth Service"
+boundary MAIL as "Email Service"
+
+' Estructura vertical
+U -down-> API
+API -down-> SVC
+SVC -down-> MAIL
+
+' Flujo principal
+U -> API : 1. POST /register {email, pass}
+API -> SVC : 2. Registrar usuario y generar token
+SVC -> MAIL : 3. Enviar email de verificación
+API --> U : 4. 201 Creado (pendiente verificación)
+
+' Verificación
+U -> API : 5. GET /verify?token
+API -> SVC : 6. Validar token y activar usuario
+API --> U : 7. 200 Cuenta verificada
+
+' Errores
+API --> U : 8. 409 Email existente
+API --> U : 9. 400 Token inválido
+@enduml
