@@ -19,14 +19,13 @@ SVC -down-> MAIL
 U -> API : 1. POST /register {email, pass}
 API -> SVC : 2. Registrar usuario y generar token
 SVC -> MAIL : 3. Enviar email de verificación
-API --> U : 4. 201 Creado (pendiente verificación)
+SVC --> API : 4. 201 Creado (pendiente verificación)
+API --> U : 5. 201 Creado (pendiente verificación)
 
 ' Verificación
-U -> API : 5. GET /verify?token
-API -> SVC : 6. Validar token y activar usuario
-API --> U : 7. 200 Cuenta verificada
+U -> API : 6. GET /verify?token
+API -> SVC : 7. Validar token y activar usuario
+SVC --> API : 8. 200 Cuenta verificada
+API --> U : 9. 200 Cuenta verificada
 
-' Errores
-API --> U : 8. 409 Email existente
-API --> U : 9. 400 Token inválido
 @enduml
