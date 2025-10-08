@@ -1,0 +1,68 @@
+@startuml
+skinparam shadowing false
+left to right direction
+title Modelo Físico — Biblioteca en línea (ER)
+
+' === Tablas ===
+entity Usuario_p {
+  {PK} idUsuario       : UUID
+  email                : VARCHAR UNIQUE NOT NULL
+  nombre               : VARCHAR
+  fecha_alta           : DATE
+  activo               : BOOLEAN
+}
+
+entity Libro_p {
+  {PK} isbn            : VARCHAR(13)
+  titulo               : VARCHAR
+  autor                : VARCHAR
+  anio_publicacion     : INT
+}
+
+entity Ejemplar_p {
+  {PK} idEjemplar      : UUID
+  codigo_inventario    : VARCHAR UNIQUE NOT NULL
+  estado               : VARCHAR  <<CHK[DISPONIBLE,PRESTADO,RESERVADO,DANIADO,BAJA]>>
+  {FK} libro_isbn      : VARCHAR(13)
+  idx(libro_isbn)
+}
+
+entity Prestamo_p {
+  {PK} idPrestamo      : UUID
+  {FK} usuario_id      : UUID
+  {FK} ejemplar_id     : UUID
+  fecha_solicitud      : TIMESTAMP
+  fecha_inicio         : DATE
+  fecha_vencimiento    : DATE
+  fecha_devolucion     : DATE?        ' admitimos NULL
+  estado               : VARCHAR <<CHK[PENDIENTE,ACTIVO,VENCIDO,DEVUELTO,CANCELADO]>>
+  UQ(ejemplar_id) where estado in ('ACTIVO')
+  idx(usuario_id, estado)
+}
+
+entity Notificacion_p {
+  {PK} idNotificacion  : UUID
+  {FK} prestamo_id     : UUID
+  destinatario_email   : VARCHAR
+  medio                : VARCHAR <<CHK[EMAIL,SMS,PUSH]>>
+  tipo                 : VARCHAR
+  fecha_programada     : TIMESTAMP
+  fecha_envio          : TIMESTAMP?
+  contenido            : TEXT
+  idx(prestamo_id, fecha_programada)
+}
+
+' === Relaciones (pata de cuervo) ===
+Usuario_p  ||--o{ Prestamo_p     : FK (usuario_id  → Usuario_p.idUsuario)
+Ejemplar_p ||--o{ Prestamo_p     : FK (ejemplar_id → Ejemplar_p.idEjemplar)
+Libro_p    ||--o{ Ejemplar_p     : FK (libro_isbn  → Libro_p.isbn)
+Prestamo_p ||--o{ Notificacion_p : FK (prestamo_id → Prestamo_p.idPrestamo)
+
+' === Reglas de negocio / notas ===
+note bottom of Prestamo_p
+  Reglas:
+  - fecha_vencimiento > fecha_inicio
+  - Un ejemplar no puede estar en más de un préstamo ACTIVO
+    (reflejado como UQ(ejemplar_id) filtrada por estado='ACTIVO')
+end note
+@enduml
