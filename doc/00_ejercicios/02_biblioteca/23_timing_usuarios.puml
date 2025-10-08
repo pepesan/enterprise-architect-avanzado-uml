@@ -9,16 +9,16 @@ U is NoRegistrado
 @1
 U is Registrado : Registrarse
 
-@2
+@+2
 U is Activo : Verificación completada
 
-@3
+@+2
 U is Bloqueado : Bloqueado por gestor
 
-@4
+@+1
 U is Activo : Desbloqueado
 
-@5
+@+1
 U is Eliminado : Eliminar cuenta
 
 
